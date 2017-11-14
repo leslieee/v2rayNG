@@ -1,9 +1,7 @@
 package com.v2ray.ang.ui
 
 import android.Manifest
-import android.content.ComponentName
-import android.content.Intent
-import android.content.ServiceConnection
+import android.content.*
 import android.net.VpnService
 import android.os.*
 import android.support.v7.widget.LinearLayoutManager
@@ -19,9 +17,12 @@ import org.jetbrains.anko.imageResource
 import org.jetbrains.anko.startActivity
 import org.jetbrains.anko.toast
 import android.os.Bundle
+import android.view.KeyEvent
 import com.v2ray.ang.AppConfig
 import org.jetbrains.anko.startActivityForResult
 import java.lang.ref.SoftReference
+import android.view.KeyEvent.KEYCODE_BACK
+
 
 class MainActivity : BaseActivity() {
     companion object {
@@ -63,28 +64,39 @@ class MainActivity : BaseActivity() {
     }
 
     fun startV2Ray() {
+        toast(R.string.toast_services_start)
         if (AngConfigManager.genStoreV2rayConfig()) {
-            toast(R.string.toast_services_start)
             V2RayVpnService.startV2Ray(this)
         }
     }
 
     override fun onStart() {
         super.onStart()
-        val intent = Intent(this.applicationContext, V2RayVpnService::class.java)
-        intent.`package` = "com.v2ray.ang"
-        bindService(intent, mConnection, BIND_AUTO_CREATE)
+        fabChecked = false
+
+//        val intent = Intent(this.applicationContext, V2RayVpnService::class.java)
+//        intent.`package` = AppConfig.ANG_PACKAGE
+//        bindService(intent, mConnection, BIND_AUTO_CREATE)
+
+        mMsgReceive = ReceiveMessageHandler(this@MainActivity)
+        registerReceiver(mMsgReceive, IntentFilter(AppConfig.BROADCAST_ACTION_ACTIVITY))
+        sendMsg(AppConfig.MSG_REGISTER_CLIENT, "")
     }
 
     override fun onStop() {
         super.onStop()
-
-        unbindService(mConnection)
+//        unbindService(mConnection)
+        unregisterReceiver(mMsgReceive)
+        mMsgReceive = null
     }
 
     public override fun onResume() {
         super.onResume()
         adapter.updateConfigList()
+    }
+
+    public override fun onPause() {
+        super.onPause()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -185,15 +197,22 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    private var mMsgReceive: Messenger? = null
+//    val mConnection = object : ServiceConnection {
+//        override fun onServiceDisconnected(name: ComponentName?) {
+//        }
+//
+//        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+//            sendMsg(AppConfig.MSG_REGISTER_CLIENT, "")
+//        }
+//    }
 
-    private class ReceiveMessageHandler(activity: MainActivity) : Handler() {
+    private var mMsgReceive: BroadcastReceiver? = null
+
+    private class ReceiveMessageHandler(activity: MainActivity) : BroadcastReceiver() {
         internal var mReference: SoftReference<MainActivity> = SoftReference(activity)
-
-        override fun handleMessage(msg: Message) {
-            super.handleMessage(msg)
+        override fun onReceive(ctx: Context?, intent: Intent?) {
             val activity = mReference.get()
-            when (msg.what) {
+            when (intent?.getIntExtra("key", 0)) {
                 AppConfig.MSG_STATE_RUNNING -> {
                     activity?.fabChecked = true
                 }
@@ -201,12 +220,12 @@ class MainActivity : BaseActivity() {
                     activity?.fabChecked = false
                 }
                 AppConfig.MSG_STATE_START_SUCCESS -> {
-                    activity?.fabChecked = true
                     activity?.toast(R.string.toast_services_success)
+                    activity?.fabChecked = true
                 }
                 AppConfig.MSG_STATE_START_FAILURE -> {
-                    activity?.fabChecked = false
                     activity?.toast(R.string.toast_services_failure)
+                    activity?.fabChecked = false
                 }
                 AppConfig.MSG_STATE_STOP_SUCCESS -> {
                     activity?.fabChecked = false
@@ -215,34 +234,23 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    private var mMsgSend: Messenger? = null
-    val mConnection = object : ServiceConnection {
-        override fun onServiceDisconnected(name: ComponentName?) {
-            mMsgSend = null
-            mMsgReceive = null
-        }
-
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            mMsgSend = Messenger(service)
-            mMsgReceive = Messenger(ReceiveMessageHandler(this@MainActivity))
-
-            sendMsg(AppConfig.MSG_REGISTER_CLIENT, "")
-        }
-    }
-
     fun sendMsg(what: Int, content: String) {
         try {
-            val msg = Message.obtain()
-            msg.replyTo = mMsgReceive
-            msg.what = what
-            val bundle = Bundle()
-            bundle.putString("key", content)
-            msg.data = bundle
-            mMsgSend?.send(msg)
+            val intent = Intent()
+            intent.action = AppConfig.BROADCAST_ACTION_SERVICE
+            intent.`package` = AppConfig.ANG_PACKAGE
+            intent.putExtra("key", what)
+            sendBroadcast(intent)
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
-
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            moveTaskToBack(false)
+            return true
+        }
+        return super.onKeyDown(keyCode, event)
+    }
 }

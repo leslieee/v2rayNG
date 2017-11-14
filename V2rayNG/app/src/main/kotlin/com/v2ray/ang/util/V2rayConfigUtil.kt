@@ -5,7 +5,11 @@ import com.google.gson.Gson
 import com.v2ray.ang.AngApplication
 import com.v2ray.ang.dto.AngConfig
 import com.v2ray.ang.dto.V2rayConfig
+import com.v2ray.ang.ui.SettingsActivity
 import org.json.JSONObject
+import org.json.JSONArray
+import java.util.LinkedHashSet
+
 
 object V2rayConfigUtil {
     val lib2rayObj: JSONObject by lazy {
@@ -52,10 +56,10 @@ object V2rayConfigUtil {
     }
 
     val requestObj: JSONObject by lazy {
-        JSONObject("""{"version":"1.1","method":"GET","path":["/"],"headers":{"Host":[""],"User-Agent":["Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.75 Safari/537.36","Mozilla/5.0 (iPhone; CPU iPhone OS 10_0_2 like Mac OS X) AppleWebKit/601.1 (KHTML, like Gecko) CriOS/53.0.2785.109 Mobile/14A456 Safari/601.1.46"],"Accept-Encoding":["gzip, deflate"],"Connection":["keep-alive"],"Pragma":"no-cache"}}""")
+        JSONObject("""{"version":"1.1","method":"GET","path":["/"],"headers":{"User-Agent":["Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.75 Safari/537.36","Mozilla/5.0 (iPhone; CPU iPhone OS 10_0_2 like Mac OS X) AppleWebKit/601.1 (KHTML, like Gecko) CriOS/53.0.2785.109 Mobile/14A456 Safari/601.1.46"],"Accept-Encoding":["gzip, deflate"],"Connection":["keep-alive"],"Pragma":"no-cache"}}""")
     }
     val responseObj: JSONObject by lazy {
-        JSONObject("""{"version":"1.1","status":"200","reason":"OK","headers":{"Content-Type":["application/octet-stream","application/x-msdownload","text/html","application/x-shockwave-flash"],"Transfer-Encoding":["chunked"],"Connection":["keep-alive"],"Pragma":"no-cache"}}""")
+        JSONObject("""{"version":"1.1","status":"200","reason":"OK","headers":{"Content-Type":["application/octet-stream","video/mpeg"],"Transfer-Encoding":["chunked"],"Connection":["keep-alive"],"Pragma":"no-cache"}}""")
     }
 
     data class Result(var status: Boolean, var content: String)
@@ -91,6 +95,9 @@ object V2rayConfigUtil {
 
             //routing
             routing(config, v2rayConfig)
+
+            //dns
+            customDns(config, v2rayConfig, app)
 
             //增加lib2ray
             val finalConfig = addLib2ray(v2rayConfig)
@@ -141,7 +148,7 @@ object V2rayConfigUtil {
      * 远程服务器底层传输配置
      */
     private fun boundStreamSettings(config: AngConfig): V2rayConfig.OutboundBean.StreamSettingsBean {
-        val streamSettings = V2rayConfig.OutboundBean.StreamSettingsBean("", "", null, null)
+        val streamSettings = V2rayConfig.OutboundBean.StreamSettingsBean("", "", null, null, null)
         try {
             //远程服务器底层传输配置
             streamSettings.network = config.vmess[config.index].network
@@ -163,6 +170,17 @@ object V2rayConfigUtil {
                     streamSettings.kcpsettings = kcpsettings
                 }
                 "ws" -> {
+                    val wssettings = V2rayConfig.OutboundBean.StreamSettingsBean.WssettingsBean()
+                    wssettings.connectionReuse = true
+                    val lstParameter = config.vmess[config.index].requestHost.split(";")
+                    if (lstParameter.size > 0) {
+                        wssettings.path = lstParameter.get(0)
+                    }
+                    if (lstParameter.size > 1) {
+                        wssettings.headers = V2rayConfig.OutboundBean.StreamSettingsBean.WssettingsBean.HeadersBean()
+                        wssettings.headers.Host = lstParameter.get(1)
+                    }
+                    streamSettings.wssettings = wssettings
                 }
                 else -> {
                     //tcp带http伪装
@@ -173,10 +191,15 @@ object V2rayConfigUtil {
                         tcpSettings.header.type = config.vmess[config.index].headerType
 
                         if (requestObj.has("headers")
-                                || requestObj.optJSONObject("headers").has("Host")) {
+                                || requestObj.optJSONObject("headers").has("Pragma")) {
+                            val arrHost = JSONArray()
+                            config.vmess[config.index].requestHost
+                                    .split(",")
+                                    .forEach {
+                                        arrHost.put(it)
+                                    }
                             requestObj.optJSONObject("headers")
-                                    .optJSONArray("Host")
-                                    .put(config.vmess[config.index].requestHost)
+                                    .put("Host", arrHost)
                             tcpSettings.header.request = requestObj
                             tcpSettings.header.response = responseObj
                         }
@@ -216,6 +239,20 @@ object V2rayConfigUtil {
     }
 
     /**
+     * Custom Dns
+     */
+    fun customDns(config: AngConfig, v2rayConfig: V2rayConfig, app: AngApplication): Boolean {
+        try {
+            v2rayConfig.dns.servers = getRemoteDnsServers(app)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+        return true
+    }
+
+
+    /**
      * 增加lib2ray
      */
     private fun addLib2ray(v2rayConfig: V2rayConfig): String {
@@ -228,5 +265,33 @@ object V2rayConfigUtil {
             e.printStackTrace()
             return ""
         }
+    }
+
+    /**
+     * get remote dns servers from preference
+     */
+    fun getRemoteDnsServers(app: AngApplication): List<out String> {
+        val ret = ArrayList<String>()
+        val remoteDns = app.defaultDPreference.getPrefString(SettingsActivity.PREF_REMOTE_DNS, "")
+        if (!TextUtils.isEmpty(remoteDns)) {
+            remoteDns
+                    .split(",")
+                    .forEach {
+                        if (Utils.isIpAddress(it)) {
+                            ret.add(it)
+                        }
+                    }
+        }
+
+        if (!ret.contains("8.8.8.8")) {
+            ret.add("8.8.8.8")
+        }
+        if (!ret.contains("8.8.4.4")) {
+            ret.add("8.8.4.4")
+        }
+        if (!ret.contains("localhost")) {
+            ret.add("localhost")
+        }
+        return ret
     }
 }

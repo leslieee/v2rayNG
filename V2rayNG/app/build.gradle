@@ -11,8 +11,8 @@ android {
         applicationId "com.v2ray.ang"
         minSdkVersion 17
         targetSdkVersion Integer.parseInt("$targetSdkVer")
-        versionCode 35
-        versionName "0.1.6"
+        versionCode 48
+        versionName "0.2.1"
     }
 
     signingConfigs {
@@ -35,17 +35,14 @@ android {
             minifyEnabled false
             zipAlignEnabled false
             shrinkResources false
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
 //            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-            buildConfigField "boolean", "LOG_DEBUG", "true"
-
-            versionNameSuffix "-debug"
             minifyEnabled false
             zipAlignEnabled false
             shrinkResources false
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
         }
     }
 

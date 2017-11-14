@@ -11,6 +11,10 @@ import com.google.zxing.qrcode.QRCodeWriter
 import com.google.zxing.EncodeHintType
 import java.util.*
 import kotlin.collections.HashMap
+import android.app.ActivityManager
+import com.orhanobut.logger.Logger
+import java.util.logging.LogManager
+
 
 object Utils {
 
@@ -170,6 +174,33 @@ object Utils {
             e.printStackTrace()
             return false
         }
+    }
+
+    /**
+     * 判断服务是否后台运行
+
+     * @param context
+     * *            Context
+     * *
+     * @param className
+     * *            判断的服务名字
+     * *
+     * @return true 在运行 false 不在运行
+     */
+    fun isServiceRun(mContext: Context, className: String): Boolean {
+        var isRun = false
+        val activityManager = mContext
+                .getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val serviceList = activityManager
+                .getRunningServices(900)
+        val size = serviceList.size
+        for (i in 0..size - 1) {
+            if (serviceList[i].service.className == className) {
+                isRun = true
+                break
+            }
+        }
+        return isRun
     }
 }
 

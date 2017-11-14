@@ -8,6 +8,7 @@
     <string name="toast_permission_denied">无法取得权限</string>
     <string name="notification_action_more">点击了解更多</string>
     <string name="toast_services_start">启动服务中</string>
+    <string name="toast_services_stop">关闭中</string>
     <string name="toast_services_success">启动服务成功</string>
     <string name="toast_services_failure">启动服务失败</string>
 
@@ -29,7 +30,7 @@
     <string name="server_lab_network">传输协议(network)</string>
     <string name="server_lab_more_function">功能设置（不清楚则保持默认值）</string>
     <string name="server_lab_head_type">伪装类型(type)</string>
-    <string name="server_lab_request_host">Tcp伪装域名(host)</string>
+    <string name="server_lab_request_host">伪装域名/ws path/ws(path+host)分号(;)隔开</string>
     <string name="server_lab_stream_security">底层传输安全</string>
     <string name="toast_success">成功</string>
     <string name="toast_failure">失败</string>
@@ -46,6 +47,7 @@
     <!-- Preferences -->
     <string name="title_settings">设置</string>
     <string name="title_about">关于</string>
+    <string name="title_advanced">进阶设置</string>
 
     <string name="title_pref_bypass_mainland">绕过大陆地址</string>
     <string name="summary_pref_bypass_mainland">绕过大陆地址</string>
@@ -53,10 +55,23 @@
     <string name="title_pref_per_app_proxy">分应用代理</string>
     <string name="summary_pref_per_app_proxy">分应用代理仅支持 Android 5.0 Lollipop 及更高</string>
 
+    <string name="title_pref_donate">捐赠</string>
+    <string name="summary_pref_donate">支持开发者，并激活进阶功能</string>
+    <string name="donate_detail">陆续增加一些试验性的进阶功能</string>
+
+    <string name="title_pref_remote_dns">远程DNS</string>
+    <string name="summary_pref_remote_dns">远程DNS</string>
+
     <string name="title_pref_feedback">反馈</string>
     <string name="summary_pref_feedback">反馈改进或漏洞至 GitHub</string>
 
     <string name="title_pref_version">版本</string>
+
+    <string name="donate_error_setup">初始化错误:</string>
+    <string name="donate_error_inventory">无法查询到项目</string>
+    <string name="donate_error_purchase1">错误:</string>
+    <string name="donate_error_purchase2">错误,真实性验证失败.</string>
+    <string name="donate_success_purchase">感谢您的捐赠!</string>
 
     <string-array name="share_method">
         <item>二维码</item>

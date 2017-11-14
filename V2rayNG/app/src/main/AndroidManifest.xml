@@ -4,8 +4,9 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <!--<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />-->
+    <!-- <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" /> -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="com.android.vending.BILLING" />
 
     <application
         android:name=".AngApplication"
@@ -20,11 +21,14 @@
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
@@ -38,6 +42,9 @@
             android:name=".ui.PerAppProxyActivity"
             android:label="@string/title_pref_per_app_proxy" />
         <activity android:name=".ui.ScannerActivity" />
+        <activity
+            android:name="com.v2ray.ang.InappBuyActivity"
+            android:label="@string/title_settings" />
 
         <service
             android:name=".service.V2RayVpnService"
@@ -47,12 +54,17 @@
             android:permission="android.permission.BIND_VPN_SERVICE"
             android:process=":RunSoLibV2RayDaemon" />
 
-        <!--<receiver android:name=".receiver.BootBroadcastReceiver">-->
-        <!--<intent-filter>-->
-        <!--<action android:name="android.intent.action.BOOT_COMPLETED" />-->
-        <!--<category android:name="android.intent.category.LAUNCHER" />-->
-        <!--</intent-filter>-->
-        <!--</receiver>-->
+        <receiver android:name=".receiver.WidgetProvider">
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/app_widget_provider" />
+
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.v2ray.ang.action.widget.click" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

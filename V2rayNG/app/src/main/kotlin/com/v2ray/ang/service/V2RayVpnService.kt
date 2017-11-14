@@ -10,13 +10,9 @@ import android.net.NetworkInfo
 import android.net.VpnService
 import android.os.*
 import android.support.v7.app.NotificationCompat
-import android.util.Log
 import com.github.pwittchen.reactivenetwork.library.ReactiveNetwork
 import com.orhanobut.logger.Logger
 import com.v2ray.ang.AppConfig
-import com.v2ray.ang.AppConfig.ACTION_STOP_V2RAY
-import com.v2ray.ang.AppConfig.PREF_CURR_CONFIG
-import com.v2ray.ang.AppConfig.PREF_CURR_CONFIG_NAME
 import com.v2ray.ang.R
 import com.v2ray.ang.defaultDPreference
 import com.v2ray.ang.ui.MainActivity
@@ -48,13 +44,6 @@ class V2RayVpnService : VpnService() {
     private val v2rayCallback = V2RayCallback()
     private var connectivitySubscription: Subscription? = null
     private lateinit var configContent: String
-
-    private val stopV2RayReceiver = object : BroadcastReceiver() {
-        override fun onReceive(ctx: Context?, intent: Intent?) {
-            stopV2Ray()
-        }
-    }
-
     private lateinit var mInterface: ParcelFileDescriptor
     val fd: Int get() = mInterface.fd
 
@@ -87,7 +76,7 @@ class V2RayVpnService : VpnService() {
                     }
                 }
 
-        builder.setSession(defaultDPreference.getPrefString(PREF_CURR_CONFIG_NAME, ""))
+        builder.setSession(defaultDPreference.getPrefString(AppConfig.PREF_CURR_CONFIG_NAME, ""))
 
         val dnsServers = Utils.getDnsServers()
         for (dns in dnsServers)
@@ -117,7 +106,8 @@ class V2RayVpnService : VpnService() {
 
         // Create a new interface using the builder and save the parameters.
         mInterface = builder.establish()
-        Log.d("VPNService", "New interface: " + parameters)
+        //Logger.d("VPNService", "New interface: " + parameters)
+        //Logger.d(Libv2ray.checkVersionX())
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -144,9 +134,9 @@ class V2RayVpnService : VpnService() {
     private fun startV2ray() {
         if (!v2rayPoint.isRunning) {
 
-            registerReceiver(stopV2RayReceiver, IntentFilter(ACTION_STOP_V2RAY))
+            registerReceiver(mMsgReceive, IntentFilter(AppConfig.BROADCAST_ACTION_SERVICE))
 
-            configContent = defaultDPreference.getPrefString(PREF_CURR_CONFIG, "")
+            configContent = defaultDPreference.getPrefString(AppConfig.PREF_CURR_CONFIG, "")
 
             connectivitySubscription = ReactiveNetwork.observeNetworkConnectivity(this.applicationContext)
                     .subscribeOn(Schedulers.io())
@@ -156,7 +146,7 @@ class V2RayVpnService : VpnService() {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe { connectivity ->
                         val state = connectivity.state
-                        Log.e("ReactiveNetwork", state.toString())
+                        Logger.e("ReactiveNetwork", state.toString())
                         if (state == NetworkInfo.State.CONNECTED) {
                             if (v2rayPoint.isRunning) {
                                 v2rayPoint.networkInterrupted()
@@ -165,9 +155,12 @@ class V2RayVpnService : VpnService() {
                     }
 
             v2rayPoint.callbacks = v2rayCallback
-            v2rayPoint.vpnSupportSet = v2rayCallback
+//            v2rayPoint.vpnSupportSet = v2rayCallback
+            v2rayPoint.setVpnSupportSet(v2rayCallback)
+
             v2rayPoint.configureFile = "V2Ray_internal/ConfigureFileContent"
             v2rayPoint.configureFileContent = configContent
+
             v2rayPoint.runLoop()
         }
 
@@ -184,7 +177,8 @@ class V2RayVpnService : VpnService() {
             v2rayPoint.stopLoop()
         }
 
-        unregisterReceiver(stopV2RayReceiver)
+        unregisterReceiver(mMsgReceive)
+
         connectivitySubscription?.let {
             it.unsubscribe()
             connectivitySubscription = null
@@ -201,14 +195,17 @@ class V2RayVpnService : VpnService() {
                 NOTIFICATION_PENDING_INTENT_CONTENT, startMainIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT)
 
-        val stopV2RayIntent = Intent(ACTION_STOP_V2RAY)
+        val stopV2RayIntent = Intent(AppConfig.BROADCAST_ACTION_SERVICE)
+        stopV2RayIntent.`package` = AppConfig.ANG_PACKAGE
+        stopV2RayIntent.putExtra("key", AppConfig.MSG_STATE_STOP)
+
         val stopV2RayPendingIntent = PendingIntent.getBroadcast(applicationContext,
                 NOTIFICATION_PENDING_INTENT_STOP_V2RAY, stopV2RayIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT)
 
         val notification = NotificationCompat.Builder(applicationContext)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(defaultDPreference.getPrefString(PREF_CURR_CONFIG_NAME, ""))
+                .setContentTitle(defaultDPreference.getPrefString(AppConfig.PREF_CURR_CONFIG_NAME, ""))
                 .setContentText(getString(R.string.notification_action_more))
                 .setPriority(NotificationCompat.PRIORITY_MIN)
                 .setContentIntent(contentPendingIntent)
@@ -242,7 +239,7 @@ class V2RayVpnService : VpnService() {
         }
 
         override fun setup(s: String): Long {
-            Logger.d(s)
+            //Logger.d(s)
             try {
                 this@V2RayVpnService.setup(s)
                 return 0
@@ -253,19 +250,16 @@ class V2RayVpnService : VpnService() {
         }
     }
 
-    var mMsgSend: Messenger? = null
-    private var mMsgReceive = Messenger(ReceiveMessageHandler(this@V2RayVpnService))
+    private var mMsgReceive = ReceiveMessageHandler(this@V2RayVpnService)
 
-    private class ReceiveMessageHandler(vpnService: V2RayVpnService) : Handler() {
+    private class ReceiveMessageHandler(vpnService: V2RayVpnService) : BroadcastReceiver() {
         internal var mReference: SoftReference<V2RayVpnService> = SoftReference(vpnService)
 
-        override fun handleMessage(msg: Message) {
-            super.handleMessage(msg)
+        override fun onReceive(ctx: Context?, intent: Intent?) {
             val vpnService = mReference.get()
-            when (msg.what) {
+            when (intent?.getIntExtra("key", 0)) {
                 AppConfig.MSG_REGISTER_CLIENT -> {
-                    Log.e("ReceiveMessageHandler", msg.data.get("key").toString())
-                    vpnService?.mMsgSend = msg.replyTo
+                    //Logger.e("ReceiveMessageHandler", intent?.getIntExtra("key", 0).toString())
 
                     val isRunning = vpnService?.v2rayPoint!!.isRunning
                             && VpnService.prepare(vpnService) == null
@@ -276,7 +270,7 @@ class V2RayVpnService : VpnService() {
                     }
                 }
                 AppConfig.MSG_UNREGISTER_CLIENT -> {
-                    vpnService?.mMsgSend = null
+//                    vpnService?.mMsgSend = null
                 }
                 AppConfig.MSG_STATE_START -> {
                     //nothing to do
@@ -288,19 +282,13 @@ class V2RayVpnService : VpnService() {
         }
     }
 
-    override fun onBind(intent: Intent?): IBinder {
-        return mMsgReceive.binder
-    }
-
     fun sendMsg(what: Int, content: String) {
         try {
-            val msg = Message.obtain()
-//            msg.replyTo = mMsgReceive
-            msg.what = what
-            val bundle = Bundle()
-            bundle.putString("key", content)
-            msg.data = bundle
-            mMsgSend?.send(msg)
+            val intent = Intent()
+            intent.action = AppConfig.BROADCAST_ACTION_ACTIVITY
+            intent.`package` = AppConfig.ANG_PACKAGE
+            intent.putExtra("key", what)
+            sendBroadcast(intent)
         } catch (e: Exception) {
             e.printStackTrace()
         }

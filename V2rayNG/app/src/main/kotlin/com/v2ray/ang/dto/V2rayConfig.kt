@@ -43,7 +43,8 @@ data class V2rayConfig(val port: Int,
         data class StreamSettingsBean(var network: String,
                                       var security: String,
                                       var tcpSettings: TcpsettingsBean?,
-                                      var kcpsettings: KcpsettingsBean?) {
+                                      var kcpsettings: KcpsettingsBean?,
+                                      var wssettings: WssettingsBean?) {
 
             data class TcpsettingsBean(var connectionReuse: Boolean = true,
                                        var header: HeaderBean = HeaderBean()) {
@@ -62,6 +63,12 @@ data class V2rayConfig(val port: Int,
                                        var header: HeaderBean = HeaderBean()) {
                 data class HeaderBean(var type: String = "none")
             }
+
+            data class WssettingsBean(var connectionReuse: Boolean = true,
+                                      var path: String = "",
+                                      var headers: HeadersBean = HeadersBean()) {
+                data class HeadersBean(var Host: String = "")
+            }
         }
     }
 
@@ -76,7 +83,7 @@ data class V2rayConfig(val port: Int,
         }
     }
 
-    data class DnsBean(val servers: List<String>)
+    data class DnsBean(var servers: List<String>)
 
     data class RoutingBean(val strategy: String,
                            val settings: SettingsBean) {
