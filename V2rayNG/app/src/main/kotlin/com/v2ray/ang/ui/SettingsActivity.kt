@@ -12,9 +12,10 @@ import android.support.v7.app.AppCompatActivity
 import com.v2ray.ang.BuildConfig
 import com.v2ray.ang.InappBuyActivity
 import com.v2ray.ang.R
-import com.v2ray.ang.defaultDPreference
+import com.v2ray.ang.extension.defaultDPreference
 import com.v2ray.ang.extension.onClick
 import de.psdev.licensesdialog.LicensesDialogFragment
+import libv2ray.Libv2ray
 import org.jetbrains.anko.act
 import org.jetbrains.anko.defaultSharedPreferences
 import org.jetbrains.anko.startActivity
@@ -67,7 +68,7 @@ class SettingsActivity : BaseActivity() {
             }
 
             feedback.onClick {
-                openUri("https://github.com/v2ray/v2rayNG/issues")
+                openUri("https://github.com/2dust/v2rayNG/issues")
             }
 
             perAppProxy.setOnPreferenceClickListener {
@@ -81,7 +82,7 @@ class SettingsActivity : BaseActivity() {
                 true
             }
 
-            version.summary = BuildConfig.VERSION_NAME
+            version.summary = "${BuildConfig.VERSION_NAME} (${Libv2ray.checkVersionX()})"
         }
 
         override fun onStart() {

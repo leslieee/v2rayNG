@@ -3,16 +3,18 @@ package com.v2ray.ang.util
 import android.text.TextUtils
 import com.google.gson.Gson
 import com.v2ray.ang.AngApplication
+import com.v2ray.ang.AppConfig
 import com.v2ray.ang.dto.AngConfig
 import com.v2ray.ang.dto.V2rayConfig
+import com.v2ray.ang.extension.putOpt
 import com.v2ray.ang.ui.SettingsActivity
-import org.json.JSONObject
 import org.json.JSONArray
-import java.util.LinkedHashSet
-
+import org.json.JSONException
+import org.json.JSONObject
+import java.util.*
 
 object V2rayConfigUtil {
-    val lib2rayObj: JSONObject by lazy {
+    private val lib2rayObj: JSONObject by lazy {
         JSONObject("""{
                     "enabled": true,
                     "listener": {
@@ -55,11 +57,30 @@ object V2rayConfigUtil {
                 }""")
     }
 
-    val requestObj: JSONObject by lazy {
+    private val requestObj: JSONObject by lazy {
         JSONObject("""{"version":"1.1","method":"GET","path":["/"],"headers":{"User-Agent":["Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.75 Safari/537.36","Mozilla/5.0 (iPhone; CPU iPhone OS 10_0_2 like Mac OS X) AppleWebKit/601.1 (KHTML, like Gecko) CriOS/53.0.2785.109 Mobile/14A456 Safari/601.1.46"],"Accept-Encoding":["gzip, deflate"],"Connection":["keep-alive"],"Pragma":"no-cache"}}""")
     }
-    val responseObj: JSONObject by lazy {
+    private val responseObj: JSONObject by lazy {
         JSONObject("""{"version":"1.1","status":"200","reason":"OK","headers":{"Content-Type":["application/octet-stream","video/mpeg"],"Transfer-Encoding":["chunked"],"Connection":["keep-alive"],"Pragma":"no-cache"}}""")
+    }
+
+    private val replacementPairs by lazy {
+        mapOf("port" to 10808,
+                "inbound" to JSONObject("""{
+                    "protocol": "socks",
+                    "listen": "127.0.0.1",
+                    "settings": {
+                        "auth": "noauth",
+                        "udp": true
+                    },
+                    "domainOverride": ["http", "tls"]
+                }"""),
+                "inboundDetour" to JSONArray(),
+                "#lib2ray" to lib2rayObj,
+                "log" to JSONObject("""{
+                    "loglevel": "warning"
+                }""")
+        )
     }
 
     data class Result(var status: Boolean, var content: String)
@@ -68,6 +89,32 @@ object V2rayConfigUtil {
      * 生成v2ray的客户端配置文件
      */
     fun getV2rayConfig(app: AngApplication, config: AngConfig): Result {
+        var result = Result(false, "")
+        try {
+            //检查设置
+            if (config.index < 0
+                    || config.vmess.count() <= 0
+                    || config.index > config.vmess.count() - 1
+                    ) {
+                return result
+            }
+
+            if (config.vmess[config.index].configType == 1) {
+                result = getV2rayConfigType1(app, config)
+            } else if (config.vmess[config.index].configType == 2) {
+                result = getV2rayConfigType2(app, config)
+            }
+            return result
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return result
+        }
+    }
+
+    /**
+     * 生成v2ray的客户端配置文件
+     */
+    private fun getV2rayConfigType1(app: AngApplication, config: AngConfig): Result {
         val result = Result(false, "")
         try {
             //检查设置
@@ -101,6 +148,36 @@ object V2rayConfigUtil {
 
             //增加lib2ray
             val finalConfig = addLib2ray(v2rayConfig)
+
+            result.status = true
+            result.content = finalConfig
+            return result
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return result
+        }
+    }
+
+    /**
+     * 生成v2ray的客户端配置文件
+     */
+    private fun getV2rayConfigType2(app: AngApplication, config: AngConfig): Result {
+        val result = Result(false, "")
+        try {
+            //检查设置
+            if (config.index < 0
+                    || config.vmess.count() <= 0
+                    || config.index > config.vmess.count() - 1
+                    ) {
+                return result
+            }
+            val vmess = config.vmess[config.index]
+            val guid = vmess.guid;
+            val jsonConfig = app.defaultDPreference.getPrefString(AppConfig.ANG_CONFIG + guid, "")
+
+            //增加lib2ray
+            val finalConfig = addLib2ray2(jsonConfig)
 
             result.status = true
             result.content = finalConfig
@@ -217,7 +294,7 @@ object V2rayConfigUtil {
     /**
      * routing
      */
-    fun routing(config: AngConfig, v2rayConfig: V2rayConfig): Boolean {
+    private fun routing(config: AngConfig, v2rayConfig: V2rayConfig): Boolean {
         try {
             //绕过大陆网址
             if (config.bypassMainland) {
@@ -241,7 +318,7 @@ object V2rayConfigUtil {
     /**
      * Custom Dns
      */
-    fun customDns(config: AngConfig, v2rayConfig: V2rayConfig, app: AngApplication): Boolean {
+    private fun customDns(config: AngConfig, v2rayConfig: V2rayConfig, app: AngApplication): Boolean {
         try {
             v2rayConfig.dns.servers = getRemoteDnsServers(app)
         } catch (e: Exception) {
@@ -270,7 +347,7 @@ object V2rayConfigUtil {
     /**
      * get remote dns servers from preference
      */
-    fun getRemoteDnsServers(app: AngApplication): List<out String> {
+    private fun getRemoteDnsServers(app: AngApplication): List<out String> {
         val ret = ArrayList<String>()
         val remoteDns = app.defaultDPreference.getPrefString(SettingsActivity.PREF_REMOTE_DNS, "")
         if (!TextUtils.isEmpty(remoteDns)) {
@@ -293,5 +370,52 @@ object V2rayConfigUtil {
             ret.add("localhost")
         }
         return ret
+    }
+
+    /**
+     * 增加lib2ray
+     */
+    private fun addLib2ray2(jsonConfig: String): String {
+        try {
+            val jObj = JSONObject(jsonConfig)
+            //find outbound address and port
+            try {
+                if (jObj.has("outbound")
+                        || jObj.optJSONObject("outbound").has("settings")
+                        || jObj.optJSONObject("outbound").optJSONObject("settings").has("vnext")) {
+                    val vnext = jObj.optJSONObject("outbound").optJSONObject("settings").optJSONArray("vnext")
+                    for (i in 0..(vnext.length() - 1)) {
+                        val item = vnext.getJSONObject(i)
+                        val address = item.getString("address")
+                        val port = item.getString("port")
+                        if (!Utils.isIpAddress(address)) {
+                            lib2rayObj.optJSONObject("preparedDomainName")
+                                    .optJSONArray("domainName")
+                                    .put(String.format("%s:%s", address, port))
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            jObj.putOpt(replacementPairs)
+            return jObj.toString()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return ""
+        }
+    }
+
+    /**
+     * is valid config
+     */
+    fun isValidConfig(conf: String): Boolean {
+        try {
+            val jObj = JSONObject(conf)
+            return jObj.has("outbound") and jObj.has("inbound")
+        } catch (e: JSONException) {
+            return false
+        }
     }
 }

@@ -2,8 +2,9 @@ package com.v2ray.ang.ui
 
 import android.Manifest
 import android.content.*
+import android.net.ConnectivityManager
+import android.net.Uri
 import android.net.VpnService
-import android.os.*
 import android.support.v7.widget.LinearLayoutManager
 import android.view.Menu
 import android.view.MenuItem
@@ -13,21 +14,23 @@ import com.v2ray.ang.service.V2RayVpnService
 import com.v2ray.ang.util.AngConfigManager
 import com.v2ray.ang.util.Utils
 import kotlinx.android.synthetic.main.activity_main.*
-import org.jetbrains.anko.imageResource
-import org.jetbrains.anko.startActivity
-import org.jetbrains.anko.toast
 import android.os.Bundle
+import android.text.TextUtils
 import android.view.KeyEvent
 import com.v2ray.ang.AppConfig
-import org.jetbrains.anko.startActivityForResult
+import com.v2ray.ang.util.MessageUtil
+import com.v2ray.ang.util.V2rayConfigUtil
+import org.jetbrains.anko.*
 import java.lang.ref.SoftReference
-import android.view.KeyEvent.KEYCODE_BACK
-
+import java.net.URL
+import android.content.IntentFilter
 
 class MainActivity : BaseActivity() {
     companion object {
         private const val REQUEST_CODE_VPN_PREPARE = 0
         private const val REQUEST_SCAN = 1
+        private const val REQUEST_FILE_CHOOSER = 2
+        private const val REQUEST_SCAN_URL = 3
     }
 
     var fabChecked = false
@@ -35,9 +38,9 @@ class MainActivity : BaseActivity() {
             field = value
             adapter.changeable = !value
             if (value) {
-                fab.imageResource = R.drawable.ic_fab_check
+                fab.imageResource = R.drawable.ic_start_connected
             } else {
-                fab.imageResource = R.drawable.ic_fab_uncheck
+                fab.imageResource = R.drawable.ic_start_idle
             }
         }
 
@@ -49,13 +52,14 @@ class MainActivity : BaseActivity() {
 
         fab.setOnClickListener {
             if (fabChecked) {
-                sendMsg(AppConfig.MSG_STATE_STOP, "")
+                MessageUtil.sendMsg2Service(this, AppConfig.MSG_STATE_STOP, "")
             } else {
                 val intent = VpnService.prepare(this)
-                if (intent == null)
+                if (intent == null) {
                     startV2Ray()
-                else
+                } else {
                     startActivityForResult(intent, REQUEST_CODE_VPN_PREPARE)
+                }
             }
         }
 
@@ -80,7 +84,7 @@ class MainActivity : BaseActivity() {
 
         mMsgReceive = ReceiveMessageHandler(this@MainActivity)
         registerReceiver(mMsgReceive, IntentFilter(AppConfig.BROADCAST_ACTION_ACTIVITY))
-        sendMsg(AppConfig.MSG_REGISTER_CLIENT, "")
+        MessageUtil.sendMsg2Service(this, AppConfig.MSG_REGISTER_CLIENT, "")
     }
 
     override fun onStop() {
@@ -103,16 +107,23 @@ class MainActivity : BaseActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
             REQUEST_CODE_VPN_PREPARE ->
-                startV2Ray()
+                if (resultCode == RESULT_OK) {
+                    startV2Ray()
+                }
             REQUEST_SCAN ->
-                importConfig(data?.getStringExtra("SCAN_RESULT"))
-//            IntentIntegrator.REQUEST_CODE -> {
-//                if (resultCode == RESULT_CANCELED) {
-//                } else {
-//                    val scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
-//                    importConfig(scanResult.contents)
-//                }
-//            }
+                if (resultCode == RESULT_OK) {
+                    importConfig(data?.getStringExtra("SCAN_RESULT"))
+                }
+            REQUEST_FILE_CHOOSER -> {
+                if (resultCode == RESULT_OK) {
+                    val uri = data!!.data
+                    readContentFromUri(uri)
+                }
+            }
+            REQUEST_SCAN_URL ->
+                if (resultCode == RESULT_OK) {
+                    importConfigCustomUrl(data?.getStringExtra("SCAN_RESULT"))
+                }
         }
     }
 
@@ -123,7 +134,7 @@ class MainActivity : BaseActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.import_qrcode -> {
-            importQRcode()
+            importQRcode(REQUEST_SCAN)
             true
         }
         R.id.import_clipboard -> {
@@ -133,6 +144,18 @@ class MainActivity : BaseActivity() {
         R.id.import_manually -> {
             startActivity<ServerActivity>("position" to -1, "isRunning" to fabChecked)
             adapter.updateConfigList()
+            true
+        }
+        R.id.import_config_custom_local -> {
+            importConfigCustomLocal()
+            true
+        }
+        R.id.import_config_custom_url -> {
+            importConfigCustomUrlClipboard()
+            true
+        }
+        R.id.import_config_custom_url_scan -> {
+            importQRcode(REQUEST_SCAN_URL)
             true
         }
         R.id.settings -> {
@@ -150,23 +173,21 @@ class MainActivity : BaseActivity() {
     /**
      * import config from qrcode
      */
-    fun importQRcode(): Boolean {
+    fun importQRcode(requestCode: Int): Boolean {
         try {
             startActivityForResult(Intent("com.google.zxing.client.android.SCAN")
                     .addCategory(Intent.CATEGORY_DEFAULT)
-                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP), REQUEST_SCAN)
+                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP), requestCode)
         } catch (e: Exception) {
             RxPermissions.getInstance(this)
                     .request(Manifest.permission.CAMERA)
                     .subscribe {
                         if (it)
-                            startActivityForResult<ScannerActivity>(REQUEST_SCAN)
+                            startActivityForResult<ScannerActivity>(requestCode)
                         else
                             toast(R.string.toast_permission_denied)
                     }
         }
-//        val integrator = IntentIntegrator(this)
-//        integrator.initiateScan(IntentIntegrator.ALL_CODE_TYPES)
         return true
     }
 
@@ -189,6 +210,112 @@ class MainActivity : BaseActivity() {
             return
         }
         val resId = AngConfigManager.importConfig(server)
+        if (resId > 0) {
+            toast(resId)
+        } else {
+            toast(R.string.toast_success)
+            adapter.updateConfigList()
+        }
+    }
+
+    /**
+     * import config from local config file
+     */
+    fun importConfigCustomLocal(): Boolean {
+        try {
+            showFileChooser()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+        return true
+    }
+
+    fun importConfigCustomUrlClipboard(): Boolean {
+        try {
+            val url = Utils.getClipboard(this)
+            if (TextUtils.isEmpty(url)) {
+                toast(R.string.toast_none_data_clipboard)
+                return false
+            }
+            return importConfigCustomUrl(url)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+    }
+
+    /**
+     * import config from url
+     */
+    fun importConfigCustomUrl(url: String?): Boolean {
+        try {
+            if (!Utils.isValidUrl(url)) {
+                toast(R.string.toast_invalid_url)
+                return false
+            }
+            doAsync {
+                val configText = URL(url).readText()
+                uiThread {
+                    importCustomizeConfig(configText)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+        return true
+    }
+
+    /**
+     * show file chooser
+     */
+    private fun showFileChooser() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
+        intent.type = "*/*"
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
+
+        try {
+            startActivityForResult(
+                    Intent.createChooser(intent, getString(R.string.title_file_chooser)),
+                    REQUEST_FILE_CHOOSER)
+        } catch (ex: android.content.ActivityNotFoundException) {
+            toast(R.string.toast_require_file_manager)
+        }
+    }
+
+    /**
+     * read content from uri
+     */
+    private fun readContentFromUri(uri: Uri) {
+        RxPermissions.getInstance(this)
+                .request(Manifest.permission.READ_EXTERNAL_STORAGE)
+                .subscribe {
+                    if (it) {
+                        try {
+                            val inputStream = contentResolver.openInputStream(uri)
+                            val configText = inputStream.bufferedReader().readText()
+                            importCustomizeConfig(configText)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    } else
+                        toast(R.string.toast_permission_denied)
+                }
+    }
+
+    /**
+     * import customize config
+     */
+    fun importCustomizeConfig(server: String?) {
+        if (server == null) {
+            return
+        }
+        if (!V2rayConfigUtil.isValidConfig(server)) {
+            toast(R.string.toast_config_file_invalid)
+            return
+        }
+        val resId = AngConfigManager.importCustomizeConfig(server)
         if (resId > 0) {
             toast(resId)
         } else {
@@ -231,18 +358,6 @@ class MainActivity : BaseActivity() {
                     activity?.fabChecked = false
                 }
             }
-        }
-    }
-
-    fun sendMsg(what: Int, content: String) {
-        try {
-            val intent = Intent()
-            intent.action = AppConfig.BROADCAST_ACTION_SERVICE
-            intent.`package` = AppConfig.ANG_PACKAGE
-            intent.putExtra("key", what)
-            sendBroadcast(intent)
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
     }
 

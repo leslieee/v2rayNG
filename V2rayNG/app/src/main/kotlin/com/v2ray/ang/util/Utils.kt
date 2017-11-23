@@ -12,6 +12,8 @@ import com.google.zxing.EncodeHintType
 import java.util.*
 import kotlin.collections.HashMap
 import android.app.ActivityManager
+import android.util.Patterns
+import android.webkit.URLUtil
 import com.orhanobut.logger.Logger
 import java.util.logging.LogManager
 
@@ -175,6 +177,22 @@ object Utils {
             return false
         }
     }
+
+    /**
+     * is valid url
+     */
+    fun isValidUrl(value: String?): Boolean {
+        try {
+            if (Patterns.WEB_URL.matcher(value).matches() || URLUtil.isValidUrl(value)) {
+                return true
+            }
+        } catch (e: WriterException) {
+            e.printStackTrace()
+            return false
+        }
+        return false
+    }
+
 
     /**
      * 判断服务是否后台运行

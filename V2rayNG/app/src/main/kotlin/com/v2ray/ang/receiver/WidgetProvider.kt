@@ -11,6 +11,7 @@ import com.v2ray.ang.R
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.service.V2RayVpnService
 import com.v2ray.ang.util.AngConfigManager
+import com.v2ray.ang.util.MessageUtil
 import com.v2ray.ang.util.Utils
 import org.jetbrains.anko.toast
 
@@ -37,13 +38,8 @@ class WidgetProvider : AppWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         if (AppConfig.BROADCAST_ACTION_WIDGET_CLICK == intent.action) {
-
             if (Utils.isServiceRun(context, "com.v2ray.ang.service.V2RayVpnService")) {
-                val intent = Intent()
-                intent.action = AppConfig.BROADCAST_ACTION_SERVICE
-                intent.`package` = AppConfig.ANG_PACKAGE
-                intent.putExtra("key", AppConfig.MSG_STATE_STOP)
-                context.sendBroadcast(intent)
+                MessageUtil.sendMsg2Service(context, AppConfig.MSG_STATE_STOP, "")
                 context.toast(R.string.toast_services_stop)
             } else {
                 context.toast(R.string.toast_services_start)

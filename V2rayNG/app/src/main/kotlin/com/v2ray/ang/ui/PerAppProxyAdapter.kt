@@ -1,13 +1,15 @@
 package com.v2ray.ang.ui
 
+import android.graphics.Color
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
 import com.v2ray.ang.R
-import com.v2ray.ang.util.AppInfo
+import com.v2ray.ang.dto.AppInfo
 import kotlinx.android.synthetic.main.item_recycler_bypass_list.view.*
 import org.jetbrains.anko.image
 import org.jetbrains.anko.layoutInflater
+import org.jetbrains.anko.textColor
 import java.util.*
 
 class PerAppProxyAdapter(val activity: BaseActivity, val apps: List<AppInfo>, blacklist: MutableSet<String>?) :
@@ -37,7 +39,7 @@ class PerAppProxyAdapter(val activity: BaseActivity, val apps: List<AppInfo>, bl
             VIEW_TYPE_HEADER -> {
                 val view = View(ctx)
                 view.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                        ctx.resources.getDimensionPixelSize(R.dimen.bypass_list_header_height) * 2)
+                        ctx.resources.getDimensionPixelSize(R.dimen.bypass_list_header_height) * 3)
                 BaseViewHolder(view)
             }
 
@@ -75,10 +77,10 @@ class PerAppProxyAdapter(val activity: BaseActivity, val apps: List<AppInfo>, bl
 
             if (appInfo.isSystemApp) {
                 name.text = String.format("** %1s", appInfo.appName)
-                //name.textColor = ContextCompat.getColor(mActivity, R.color.material_blue_grey_900)
+                name.textColor = Color.RED
             } else {
                 name.text = appInfo.appName
-                //name.textColor = ContextCompat.getColor(mActivity, R.color.abc_secondary_text_material_light)
+                name.textColor = Color.DKGRAY
             }
 
             itemView.setOnClickListener(this)

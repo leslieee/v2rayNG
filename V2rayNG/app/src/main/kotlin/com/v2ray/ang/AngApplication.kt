@@ -32,9 +32,3 @@ class AngApplication : Application() {
         AngConfigManager.inject(this)
     }
 }
-
-val Context.v2RayApplication: AngApplication
-    get() = applicationContext as AngApplication
-
-val Context.defaultDPreference: DPreference
-    get() = v2RayApplication.defaultDPreference

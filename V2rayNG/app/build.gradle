@@ -11,8 +11,8 @@ android {
         applicationId "com.v2ray.ang"
         minSdkVersion 17
         targetSdkVersion Integer.parseInt("$targetSdkVer")
-        versionCode 48
-        versionName "0.2.1"
+        versionCode 52
+        versionName "0.2.4"
     }
 
     signingConfigs {
@@ -93,7 +93,7 @@ dependencies {
     compile "org.jetbrains.anko:anko-design:$ankoVersion"
 
     compile 'com.google.code.gson:gson:2.7'
-    compile 'com.github.pwittchen:reactivenetwork:0.10.0'
+    compile 'com.github.pwittchen:reactivenetwork:0.12.2'
     compile 'com.tbruyelle.rxpermissions:rxpermissions:0.7.0@aar'
     compile 'de.psdev.licensesdialog:licensesdialog:1.8.1'
     compile 'com.dinuscxj:recycleritemdecoration:1.0.0'

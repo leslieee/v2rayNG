@@ -7,6 +7,7 @@
     <!-- <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" /> -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="com.android.vending.BILLING" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:name=".AngApplication"
@@ -31,9 +32,15 @@
 
                 <data android:mimeType="text/plain" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".ui.ServerActivity"
+            android:windowSoftInputMode="stateUnchanged" />
+        <activity
+            android:name=".ui.Server2Activity"
             android:windowSoftInputMode="stateUnchanged" />
         <activity
             android:name=".ui.SettingsActivity"
@@ -64,6 +71,18 @@
                 <action android:name="com.v2ray.ang.action.widget.click" />
             </intent-filter>
         </receiver>
+
+        <service
+            android:name=".service.QSTileService"
+            android:icon="@drawable/ic_start_busy"
+            android:label="@string/app_tile_name"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <receiver android:name=".receiver.NetWorkStateReceiver" />
 
     </application>
 

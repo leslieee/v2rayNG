@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
-import android.graphics.drawable.Drawable
+import com.v2ray.ang.dto.AppInfo
 import rx.Observable
 import java.util.*
 
@@ -40,5 +40,3 @@ object AppManagerUtil {
         return permissions?.any { it == Manifest.permission.INTERNET } ?: false
     }
 }
-
-data class AppInfo(val appName: String, val packageName: String, val appIcon: Drawable, val isSystemApp: Boolean)

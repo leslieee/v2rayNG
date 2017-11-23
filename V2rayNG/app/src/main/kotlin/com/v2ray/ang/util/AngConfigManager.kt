@@ -283,4 +283,45 @@ object AngConfigManager {
         }
     }
 
+    /**
+     * import customize config
+     */
+    fun importCustomizeConfig(server: String?): Int {
+        try {
+            if (server == null || TextUtils.isEmpty(server)) {
+                return R.string.toast_none_data
+            }
+
+            val guid = System.currentTimeMillis().toString()
+            app.defaultDPreference.setPrefString(ANG_CONFIG + guid, server)
+
+            //add
+            val vmess = AngConfig.VmessBean()
+            vmess.configType = 2
+            vmess.guid = guid
+            vmess.remarks = vmess.guid
+
+            vmess.security = ""
+            vmess.network = ""
+            vmess.headerType = ""
+            vmess.address = ""
+            vmess.port = 0
+            vmess.id = ""
+            vmess.alterId = 0
+            vmess.network = ""
+            vmess.headerType = ""
+            vmess.requestHost = ""
+            vmess.streamSecurity = ""
+
+            angConfig.vmess.add(vmess)
+            if (angConfig.vmess.count() == 1) {
+                angConfig.index = 0
+            }
+            storeConfigFile()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return -1
+        }
+        return 0
+    }
 }

@@ -6,27 +6,24 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.net.NetworkInfo
+import android.net.ConnectivityManager
 import android.net.VpnService
 import android.os.*
-import android.support.v7.app.NotificationCompat
-import com.github.pwittchen.reactivenetwork.library.ReactiveNetwork
+import android.support.v4.app.NotificationCompat
 import com.orhanobut.logger.Logger
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
-import com.v2ray.ang.defaultDPreference
+import com.v2ray.ang.extension.defaultDPreference
+import com.v2ray.ang.receiver.NetWorkStateReceiver
 import com.v2ray.ang.ui.MainActivity
 import com.v2ray.ang.ui.PerAppProxyActivity
 import com.v2ray.ang.ui.SettingsActivity
+import com.v2ray.ang.util.MessageUtil
 import com.v2ray.ang.util.Utils
 import libv2ray.Libv2ray
 import libv2ray.V2RayCallbacks
 import libv2ray.V2RayVPNServiceSupportsSet
-import rx.Subscription
-import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
 import java.lang.ref.SoftReference
-import java.util.concurrent.TimeUnit
 
 class V2RayVpnService : VpnService() {
     companion object {
@@ -42,10 +39,12 @@ class V2RayVpnService : VpnService() {
 
     private val v2rayPoint = Libv2ray.newV2RayPoint()
     private val v2rayCallback = V2RayCallback()
-    private var connectivitySubscription: Subscription? = null
+    //    private var connectivitySubscription: Subscription? = null
+    private var netWorkStateReceiver: NetWorkStateReceiver? = null
     private lateinit var configContent: String
     private lateinit var mInterface: ParcelFileDescriptor
     val fd: Int get() = mInterface.fd
+    private var currentTimeMillis: Long = 0
 
     override fun onCreate() {
         super.onCreate()
@@ -125,9 +124,10 @@ class V2RayVpnService : VpnService() {
 
         v2rayPoint.vpnSupportReady()
         if (v2rayPoint.isRunning) {
-            sendMsg(AppConfig.MSG_STATE_START_SUCCESS, "")
+            MessageUtil.sendMsg2UI(this, AppConfig.MSG_STATE_START_SUCCESS, "")
+            showNotification()
         } else {
-            sendMsg(AppConfig.MSG_STATE_START_FAILURE, "")
+            MessageUtil.sendMsg2UI(this, AppConfig.MSG_STATE_START_FAILURE, "")
         }
     }
 
@@ -138,22 +138,21 @@ class V2RayVpnService : VpnService() {
 
             configContent = defaultDPreference.getPrefString(AppConfig.PREF_CURR_CONFIG, "")
 
-            connectivitySubscription = ReactiveNetwork.observeNetworkConnectivity(this.applicationContext)
-                    .subscribeOn(Schedulers.io())
-                    .skip(1)
-                    //.filter(Connectivity.hasState(NetworkInfo.State.CONNECTED))
-                    .throttleWithTimeout(3, TimeUnit.SECONDS)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe { connectivity ->
-                        val state = connectivity.state
-                        Logger.e("ReactiveNetwork", state.toString())
-                        if (state == NetworkInfo.State.CONNECTED) {
-                            if (v2rayPoint.isRunning) {
-                                v2rayPoint.networkInterrupted()
-                            }
-                        }
-                    }
 
+//            connectivitySubscription = ReactiveNetwork.observeNetworkConnectivity(this.applicationContext)
+//                    .subscribeOn(Schedulers.io())
+//                    //.filter(Connectivity.hasState(NetworkInfo.State.CONNECTED))
+//                    //.throttleWithTimeout(3, TimeUnit.SECONDS)
+//                    .observeOn(AndroidSchedulers.mainThread())
+//                    .subscribe { connectivity ->
+//                        val state = connectivity.state
+//                        Logger.e(state.toString())
+//                        //if (state == NetworkInfo.State.CONNECTED) {
+//                        if (v2rayPoint.isRunning) {
+//                            v2rayPoint.networkInterrupted()
+//                        }
+//                        //}
+//
             v2rayPoint.callbacks = v2rayCallback
 //            v2rayPoint.vpnSupportSet = v2rayCallback
             v2rayPoint.setVpnSupportSet(v2rayCallback)
@@ -164,7 +163,7 @@ class V2RayVpnService : VpnService() {
             v2rayPoint.runLoop()
         }
 
-        showNotification()
+        //  showNotification()
     }
 
     private fun stopV2Ray() {
@@ -178,15 +177,26 @@ class V2RayVpnService : VpnService() {
         }
 
         unregisterReceiver(mMsgReceive)
+        unregisterReceiver(netWorkStateReceiver)
 
-        connectivitySubscription?.let {
-            it.unsubscribe()
-            connectivitySubscription = null
-        }
+//        connectivitySubscription?.let {
+//            it.unsubscribe()
+//            connectivitySubscription = null
+//        }
 
-        sendMsg(AppConfig.MSG_STATE_STOP_SUCCESS, "")
+
+        MessageUtil.sendMsg2UI(this, AppConfig.MSG_STATE_STOP_SUCCESS, "")
         cancelNotification()
         stopSelf()
+    }
+
+    private fun restartV2RaySoft() {
+        if (System.currentTimeMillis() > currentTimeMillis + 2000) {
+            if (v2rayPoint.isRunning) {
+                v2rayPoint.networkInterrupted()
+            }
+            currentTimeMillis = System.currentTimeMillis()
+        }
     }
 
     private fun showNotification() {
@@ -203,7 +213,7 @@ class V2RayVpnService : VpnService() {
                 NOTIFICATION_PENDING_INTENT_STOP_V2RAY, stopV2RayIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT)
 
-        val notification = NotificationCompat.Builder(applicationContext)
+        val notification = NotificationCompat.Builder(applicationContext, "M_CH_ID")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(defaultDPreference.getPrefString(AppConfig.PREF_CURR_CONFIG_NAME, ""))
                 .setContentText(getString(R.string.notification_action_more))
@@ -215,6 +225,11 @@ class V2RayVpnService : VpnService() {
                 .build()
 
         startForeground(NOTIFICATION_ID, notification)
+
+        if (netWorkStateReceiver == null) {
+            netWorkStateReceiver = NetWorkStateReceiver()
+        }
+        registerReceiver(netWorkStateReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
     }
 
     private fun cancelNotification() {
@@ -264,9 +279,9 @@ class V2RayVpnService : VpnService() {
                     val isRunning = vpnService?.v2rayPoint!!.isRunning
                             && VpnService.prepare(vpnService) == null
                     if (isRunning) {
-                        vpnService?.sendMsg(AppConfig.MSG_STATE_RUNNING, "")
+                        MessageUtil.sendMsg2UI(vpnService, AppConfig.MSG_STATE_RUNNING, "")
                     } else {
-                        vpnService?.sendMsg(AppConfig.MSG_STATE_NOT_RUNNING, "")
+                        MessageUtil.sendMsg2UI(vpnService, AppConfig.MSG_STATE_NOT_RUNNING, "")
                     }
                 }
                 AppConfig.MSG_UNREGISTER_CLIENT -> {
@@ -278,21 +293,11 @@ class V2RayVpnService : VpnService() {
                 AppConfig.MSG_STATE_STOP -> {
                     vpnService?.stopV2Ray()
                 }
+                AppConfig.MSG_STATE_RESTART_SOFT -> {
+                    vpnService?.restartV2RaySoft()
+                }
             }
         }
     }
-
-    fun sendMsg(what: Int, content: String) {
-        try {
-            val intent = Intent()
-            intent.action = AppConfig.BROADCAST_ACTION_ACTIVITY
-            intent.`package` = AppConfig.ANG_PACKAGE
-            intent.putExtra("key", what)
-            sendBroadcast(intent)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
 }
 

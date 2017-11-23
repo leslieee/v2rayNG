@@ -18,6 +18,19 @@
                 android:id="@+id/import_manually"
                 android:title="@string/menu_item_import_config_manually"
                 app:showAsAction="never" />
+
+            <item
+                android:id="@+id/import_config_custom_local"
+                android:title="@string/menu_item_import_config_custom_local"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/import_config_custom_url"
+                android:title="@string/menu_item_import_config_custom_url"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/import_config_custom_url_scan"
+                android:title="@string/menu_item_import_config_custom_url_scan"
+                app:showAsAction="never" />
         </menu>
     </item>
     <item

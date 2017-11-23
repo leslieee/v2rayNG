@@ -15,5 +15,6 @@ data class AngConfig(
                          var remarks: String = "def",
                          var headerType: String = "",
                          var requestHost: String = "",
-                         var streamSecurity: String = "")
+                         var streamSecurity: String = "",
+                         var configType: Int = 1)
 }

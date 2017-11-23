@@ -41,15 +41,23 @@ class MainRecyclerAdapter(val activity: BaseActivity) : RecyclerView.Adapter<Mai
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
         if (holder is MainViewHolder) {
-            val name = configs.vmess[position].remarks
+            val configType = configs.vmess[position].configType
+            val remarks = configs.vmess[position].remarks
             val guid = configs.vmess[position].guid
             val address = configs.vmess[position].address
             val port = configs.vmess[position].port
 
-            holder.name.text = name
+            holder.name.text = remarks
             holder.radio.isChecked = (position == configs.index)
-            holder.statistics.text = "$address : $port"
             holder.itemView.backgroundColor = Color.TRANSPARENT
+
+            if (configType == 1) {
+                holder.statistics.text = "$address : $port"
+                holder.layout_share.visibility = View.VISIBLE
+            } else if (configType == 2) {
+                holder.statistics.text = mActivity.getString(R.string.server_customize_config)
+                holder.layout_share.visibility = View.INVISIBLE
+            }
 
             holder.layout_share.setOnClickListener {
                 mActivity.selector(null, share_method.asList()) {
@@ -80,7 +88,11 @@ class MainRecyclerAdapter(val activity: BaseActivity) : RecyclerView.Adapter<Mai
             }
 
             holder.layout_edit.setOnClickListener {
-                mActivity.startActivity<ServerActivity>("position" to position, "isRunning" to !changeable)
+                if (configType == 1) {
+                    mActivity.startActivity<ServerActivity>("position" to position, "isRunning" to !changeable)
+                } else if (configType == 2) {
+                    mActivity.startActivity<Server2Activity>("position" to position, "isRunning" to !changeable)
+                }
             }
 
             holder.infoContainer.setOnClickListener {
