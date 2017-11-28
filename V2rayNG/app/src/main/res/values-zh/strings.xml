@@ -68,6 +68,9 @@
     <string name="title_pref_per_app_proxy">分应用代理</string>
     <string name="summary_pref_per_app_proxy">分应用代理仅支持 Android 5.0 Lollipop 及更高</string>
 
+    <string name="title_pref_mux_enabled">开启Mux多路复用</string>
+    <string name="summary_pref_mux_enabled">开启可能会加速,关闭可能会减少断流</string>
+
     <string name="title_pref_donate">捐赠</string>
     <string name="summary_pref_donate">支持开发者</string>
     <string name="donate_detail">陆续增加一些试验性的进阶功能</string>

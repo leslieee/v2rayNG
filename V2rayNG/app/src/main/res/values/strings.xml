@@ -69,6 +69,9 @@
     <string name="title_pref_per_app_proxy">Per-app proxy</string>
     <string name="summary_pref_per_app_proxy">Per-app proxy mode only support Android 5.0 Lollipop or higher</string>
 
+    <string name="title_pref_mux_enabled">Enable Mux</string>
+    <string name="summary_pref_mux_enabled">Enable maybe speed up network and switch network maybe flash</string>
+
     <string name="title_pref_donate">Donate</string>
     <string name="summary_pref_donate">Donate developer</string>
     <string name="donate_detail">Add some experimental advanced features</string>

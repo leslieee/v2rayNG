@@ -82,7 +82,7 @@
             </intent-filter>
         </service>
 
-        <receiver android:name=".receiver.NetWorkStateReceiver" />
+        <!--<receiver android:name=".receiver.NetWorkStateReceiver" />-->
 
     </application>
 

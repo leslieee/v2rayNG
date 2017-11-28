@@ -93,8 +93,8 @@ data class V2rayConfig(val port: Int,
 
             data class RulesBean(var type: String,
                                  var port: String,
-                                 var ip: List<String>?,
-                                 var domain: List<String>?,
+                                 var ip: ArrayList<String>?,
+                                 var domain: ArrayList<String>?,
                                  var outboundTag: String)
         }
     }

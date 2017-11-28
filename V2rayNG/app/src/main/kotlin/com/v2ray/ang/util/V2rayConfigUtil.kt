@@ -11,7 +11,6 @@ import com.v2ray.ang.ui.SettingsActivity
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.util.*
 
 object V2rayConfigUtil {
     private val lib2rayObj: JSONObject by lazy {
@@ -49,7 +48,6 @@ object V2rayConfigUtil {
                     },
                     "preparedDomainName": {
                       "domainName": [
-                        "<v2ray.cool>:<10086>"
                       ],
                       "tcpVersion": "tcp4",
                       "udpVersion": "udp4"
@@ -203,7 +201,7 @@ object V2rayConfigUtil {
             v2rayConfig.outbound.settings.vnext[0].users[0].security = vmess.security
 
             //Mux
-            v2rayConfig.outbound.mux.enabled = true
+            v2rayConfig.outbound.mux.enabled = config.muxEnabled
 
             //远程服务器底层传输配置
             v2rayConfig.outbound.streamSettings = boundStreamSettings(config)
@@ -298,15 +296,18 @@ object V2rayConfigUtil {
         try {
             //绕过大陆网址
             if (config.bypassMainland) {
-                val rulesItem1 = V2rayConfig.RoutingBean.SettingsBean.RulesBean("", "", null, null, "")
-                rulesItem1.type = "chinasites"
-                rulesItem1.outboundTag = "direct"
-                v2rayConfig.routing.settings.rules.add(rulesItem1)
+//                val rulesItem1 = V2rayConfig.RoutingBean.SettingsBean.RulesBean("", "", null, null, "")
+//                rulesItem1.type = "chinasites"
+//                rulesItem1.outboundTag = "direct"
+//                v2rayConfig.routing.settings.rules.add(rulesItem1)
+//
+//                val rulesItem2 = V2rayConfig.RoutingBean.SettingsBean.RulesBean("", "", null, null, "")
+//                rulesItem2.type = "chinaip"
+//                rulesItem2.outboundTag = "direct"
+//                v2rayConfig.routing.settings.rules.add(rulesItem2)
 
-                val rulesItem2 = V2rayConfig.RoutingBean.SettingsBean.RulesBean("", "", null, null, "")
-                rulesItem2.type = "chinaip"
-                rulesItem2.outboundTag = "direct"
-                v2rayConfig.routing.settings.rules.add(rulesItem2)
+                v2rayConfig.routing.settings.rules[0].domain?.add("geosite:cn")
+                v2rayConfig.routing.settings.rules[0].ip?.add("geoip:cn")
             }
         } catch (e: Exception) {
             e.printStackTrace()

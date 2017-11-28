@@ -6,7 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.net.ConnectivityManager
+//import android.net.ConnectivityManager
 import android.net.VpnService
 import android.os.*
 import android.support.v4.app.NotificationCompat
@@ -14,7 +14,7 @@ import com.orhanobut.logger.Logger
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.extension.defaultDPreference
-import com.v2ray.ang.receiver.NetWorkStateReceiver
+//import com.v2ray.ang.receiver.NetWorkStateReceiver
 import com.v2ray.ang.ui.MainActivity
 import com.v2ray.ang.ui.PerAppProxyActivity
 import com.v2ray.ang.ui.SettingsActivity
@@ -40,7 +40,7 @@ class V2RayVpnService : VpnService() {
     private val v2rayPoint = Libv2ray.newV2RayPoint()
     private val v2rayCallback = V2RayCallback()
     //    private var connectivitySubscription: Subscription? = null
-    private var netWorkStateReceiver: NetWorkStateReceiver? = null
+//    private var netWorkStateReceiver: NetWorkStateReceiver? = null
     private lateinit var configContent: String
     private lateinit var mInterface: ParcelFileDescriptor
     val fd: Int get() = mInterface.fd
@@ -177,7 +177,7 @@ class V2RayVpnService : VpnService() {
         }
 
         unregisterReceiver(mMsgReceive)
-        unregisterReceiver(netWorkStateReceiver)
+//        unregisterReceiver(netWorkStateReceiver)
 
 //        connectivitySubscription?.let {
 //            it.unsubscribe()
@@ -226,10 +226,10 @@ class V2RayVpnService : VpnService() {
 
         startForeground(NOTIFICATION_ID, notification)
 
-        if (netWorkStateReceiver == null) {
-            netWorkStateReceiver = NetWorkStateReceiver()
-        }
-        registerReceiver(netWorkStateReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
+//        if (netWorkStateReceiver == null) {
+//            netWorkStateReceiver = NetWorkStateReceiver()
+//        }
+//        registerReceiver(netWorkStateReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
     }
 
     private fun cancelNotification() {

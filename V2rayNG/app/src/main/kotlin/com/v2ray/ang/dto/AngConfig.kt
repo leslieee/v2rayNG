@@ -3,6 +3,7 @@ package com.v2ray.ang.dto
 data class AngConfig(
         var index: Int,
         var bypassMainland: Boolean = false,
+        var muxEnabled: Boolean = false,
         var vmess: ArrayList<VmessBean>
 ) {
     data class VmessBean(var guid: String = "123456",

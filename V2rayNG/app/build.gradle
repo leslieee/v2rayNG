@@ -11,8 +11,8 @@ android {
         applicationId "com.v2ray.ang"
         minSdkVersion 17
         targetSdkVersion Integer.parseInt("$targetSdkVer")
-        versionCode 52
-        versionName "0.2.4"
+        versionCode 55
+        versionName "0.2.6"
     }
 
     signingConfigs {
