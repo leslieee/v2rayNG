@@ -33,9 +33,9 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/title_about">
-        <Preference
-            android:key="pref_licenses"
-            android:title="@string/notices_title" />
+        <!--<Preference-->
+            <!--android:key="pref_licenses"-->
+            <!--android:title="@string/notices_title" />-->
 
         <Preference
             android:key="pref_feedback"

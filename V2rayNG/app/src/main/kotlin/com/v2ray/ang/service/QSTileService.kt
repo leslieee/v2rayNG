@@ -13,8 +13,8 @@ import android.service.quicksettings.TileService
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.extension.defaultDPreference
-import com.v2ray.ang.util.AngConfigManager
 import com.v2ray.ang.util.MessageUtil
+import com.v2ray.ang.util.Utils
 import org.jetbrains.anko.toast
 import java.lang.ref.SoftReference
 
@@ -58,14 +58,12 @@ class QSTileService : TileService() {
             Tile.STATE_INACTIVE -> {
                 val intent = VpnService.prepare(this)
                 if (intent == null)
-                    if (AngConfigManager.genStoreV2rayConfig()) {
-                        V2RayVpnService.startV2Ray(this)
-                    } else {
+                    if (!Utils.startVService(this)) {
                         toast(R.string.app_tile_first_use)
                     }
             }
             Tile.STATE_ACTIVE -> {
-                MessageUtil.sendMsg2Service(this, AppConfig.MSG_STATE_STOP, "")
+                Utils.stopVService(this)
             }
         }
     }

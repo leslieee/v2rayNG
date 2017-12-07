@@ -12,11 +12,11 @@ import com.google.zxing.EncodeHintType
 import java.util.*
 import kotlin.collections.HashMap
 import android.app.ActivityManager
+import android.content.ClipData
 import android.util.Patterns
 import android.webkit.URLUtil
-import com.orhanobut.logger.Logger
-import java.util.logging.LogManager
-
+import com.v2ray.ang.AppConfig
+import com.v2ray.ang.service.V2RayVpnService
 
 object Utils {
 
@@ -60,7 +60,7 @@ object Utils {
     fun getClipboard(context: Context): String {
         try {
             val cmb = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            return cmb.text.toString().trim()
+            return cmb.primaryClip?.getItemAt(0)?.text.toString()
         } catch (e: Exception) {
             e.printStackTrace()
             return ""
@@ -70,10 +70,11 @@ object Utils {
     /**
      * set text to clipboard
      */
-    fun setClipboard(content: String, context: Context) {
+    fun setClipboard(context: Context, content: String) {
         try {
             val cmb = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            cmb.text = content
+            val clipData = ClipData.newPlainText(null, content)
+            cmb.primaryClip = clipData
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -205,12 +206,12 @@ object Utils {
      * *
      * @return true 在运行 false 不在运行
      */
-    fun isServiceRun(mContext: Context, className: String): Boolean {
+    fun isServiceRun(context: Context, className: String): Boolean {
         var isRun = false
-        val activityManager = mContext
+        val activityManager = context
                 .getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val serviceList = activityManager
-                .getRunningServices(900)
+                .getRunningServices(999)
         val size = serviceList.size
         for (i in 0..size - 1) {
             if (serviceList[i].service.className == className) {
@@ -219,6 +220,41 @@ object Utils {
             }
         }
         return isRun
+    }
+
+    /**
+     * startVService
+     */
+    fun startVService(context: Context): Boolean {
+        if (AngConfigManager.genStoreV2rayConfig()) {
+            V2RayVpnService.startV2Ray(context)
+            return true
+        } else {
+            return false
+        }
+    }
+
+    /**
+     * startVService
+     */
+    fun startVService(context: Context, guid: String): Boolean {
+        val index = AngConfigManager.getIndexViaGuid(guid)
+        return startVService(context, index)
+    }
+
+    /**
+     * startVService
+     */
+    fun startVService(context: Context, index: Int): Boolean {
+        AngConfigManager.setActiveServer(index)
+        return startVService(context)
+    }
+
+    /**
+     * stopVService
+     */
+    fun stopVService(context: Context) {
+        MessageUtil.sendMsg2Service(context, AppConfig.MSG_STATE_STOP, "")
     }
 }
 

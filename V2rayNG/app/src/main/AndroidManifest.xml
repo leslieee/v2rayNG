@@ -7,7 +7,7 @@
     <!-- <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" /> -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="com.android.vending.BILLING" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!--<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />-->
 
     <application
         android:name=".AngApplication"
@@ -42,16 +42,12 @@
         <activity
             android:name=".ui.Server2Activity"
             android:windowSoftInputMode="stateUnchanged" />
-        <activity
-            android:name=".ui.SettingsActivity"
-            android:label="@string/title_settings" />
-        <activity
-            android:name=".ui.PerAppProxyActivity"
-            android:label="@string/title_pref_per_app_proxy" />
+        <activity android:name=".ui.SettingsActivity" />
+        <activity android:name=".ui.PerAppProxyActivity" />
         <activity android:name=".ui.ScannerActivity" />
-        <activity
-            android:name="com.v2ray.ang.InappBuyActivity"
-            android:label="@string/title_settings" />
+        <activity android:name="com.v2ray.ang.InappBuyActivity" />
+        <activity android:name=".ui.LogcatActivity" />
+
 
         <service
             android:name=".service.V2RayVpnService"
@@ -83,6 +79,23 @@
         </service>
 
         <!--<receiver android:name=".receiver.NetWorkStateReceiver" />-->
+
+        <!--=====================Tasker=====================-->
+        <activity
+            android:name=".ui.TaskerActivity"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="com.twofortyfouram.locale.intent.action.EDIT_SETTING" />
+            </intent-filter>
+        </activity>
+
+        <receiver android:name=".receiver.TaskerReceiver">
+            <intent-filter>
+                <action android:name="com.twofortyfouram.locale.intent.action.FIRE_SETTING" />
+            </intent-filter>
+        </receiver>
+        <!--=====================Tasker=====================-->
 
     </application>
 

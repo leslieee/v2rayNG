@@ -37,5 +37,10 @@
         android:id="@+id/settings"
         android:icon="@drawable/ic_settings_white_24dp"
         android:title="@string/title_settings"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/logcat"
+        android:icon="@drawable/ic_logcat_white_24dp"
+        android:title="@string/title_logcat"
+        app:showAsAction="never" />
 </menu>

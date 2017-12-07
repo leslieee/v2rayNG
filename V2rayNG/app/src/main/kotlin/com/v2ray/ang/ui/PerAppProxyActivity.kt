@@ -2,7 +2,6 @@ package com.v2ray.ang.ui
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.app.ProgressDialog
 import android.content.Context
 import android.os.Bundle
 import android.support.v7.widget.RecyclerView
@@ -44,11 +43,6 @@ class PerAppProxyActivity : BaseActivity() {
                 this, LinearDividerItemDecoration.LINEAR_DIVIDER_VERTICAL)
         recycler_view.addItemDecoration(dividerItemDecoration)
 
-        val dialog = ProgressDialog(this)
-        dialog.isIndeterminate = true
-        dialog.setCancelable(false)
-        dialog.setMessage(getString(R.string.msg_dialog_progress))
-        dialog.show()
         AppManagerUtil.rxLoadNetworkAppList(this)
                 .subscribeOn(Schedulers.io())
                 .map {
@@ -65,7 +59,7 @@ class PerAppProxyActivity : BaseActivity() {
                     val blacklist = defaultDPreference.getPrefStringSet(PREF_PER_APP_PROXY_SET, null)
                     adapter = PerAppProxyAdapter(this, it, blacklist)
                     recycler_view.adapter = adapter
-                    dialog.dismiss()
+                    pb_waiting.visibility = View.GONE
                 }
 
         recycler_view.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -116,28 +110,14 @@ class PerAppProxyActivity : BaseActivity() {
         switch_per_app_proxy.setOnCheckedChangeListener { buttonView, isChecked ->
             defaultDPreference.setPrefBoolean(SettingsActivity.PREF_PER_APP_PROXY, isChecked)
         }
-
         switch_per_app_proxy.isChecked = defaultDPreference.getPrefBoolean(SettingsActivity.PREF_PER_APP_PROXY, false)
 
         switch_bypass_apps.setOnCheckedChangeListener { buttonView, isChecked ->
             defaultDPreference.setPrefBoolean(PREF_BYPASS_APPS, isChecked)
-            tv_bypass_apps.setText(if (isChecked) R.string.switch_bypass_apps_on else
-                R.string.switch_bypass_apps_off)
         }
-
         switch_bypass_apps.isChecked = defaultDPreference.getPrefBoolean(PREF_BYPASS_APPS, false)
-        tv_bypass_apps.setText(if (switch_bypass_apps.isChecked) R.string.switch_bypass_apps_on else
-            R.string.switch_bypass_apps_off)
 
-        container_per_app_proxy.setOnClickListener {
-            switch_bypass_apps.performClick()
-        }
-
-        container_bypass_apps.setOnClickListener {
-            switch_bypass_apps.performClick()
-        }
-
-        et_search.setOnEditorActionListener() { v, actionId, event ->
+        et_search.setOnEditorActionListener { v, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 //hide
                 var imm: InputMethodManager = v.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager

@@ -1,9 +1,6 @@
 package com.v2ray.ang
 
 import android.app.Application
-import android.content.Context
-import com.orhanobut.logger.LogLevel
-import com.orhanobut.logger.Logger
 import com.squareup.leakcanary.LeakCanary
 import com.v2ray.ang.util.AngConfigManager
 import me.dozen.dpreference.DPreference
@@ -28,7 +25,7 @@ class AngApplication : Application() {
         if (firstRun)
             defaultSharedPreferences.edit().putInt(PREF_LAST_VERSION, BuildConfig.VERSION_CODE).apply()
 
-        Logger.init().logLevel(if (BuildConfig.DEBUG) LogLevel.FULL else LogLevel.NONE)
+        //Logger.init().logLevel(if (BuildConfig.DEBUG) LogLevel.FULL else LogLevel.NONE)
         AngConfigManager.inject(this)
     }
 }

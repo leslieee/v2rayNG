@@ -171,7 +171,7 @@ object V2rayConfigUtil {
                 return result
             }
             val vmess = config.vmess[config.index]
-            val guid = vmess.guid;
+            val guid = vmess.guid
             val jsonConfig = app.defaultDPreference.getPrefString(AppConfig.ANG_CONFIG + guid, "")
 
             //增加lib2ray
@@ -306,8 +306,22 @@ object V2rayConfigUtil {
 //                rulesItem2.outboundTag = "direct"
 //                v2rayConfig.routing.settings.rules.add(rulesItem2)
 
-                v2rayConfig.routing.settings.rules[0].domain?.add("geosite:cn")
-                v2rayConfig.routing.settings.rules[0].ip?.add("geoip:cn")
+//                v2rayConfig.routing.settings.rules[0].domain?.add("geosite:cn")
+//                v2rayConfig.routing.settings.rules[0].ip?.add("geoip:cn")
+
+                val rulesItem1 = V2rayConfig.RoutingBean.SettingsBean.RulesBean("", null, null, "")
+                rulesItem1.type = "field"
+                rulesItem1.outboundTag = "direct"
+                rulesItem1.domain = ArrayList<String>()
+                rulesItem1.domain?.add("geosite:cn")
+                v2rayConfig.routing.settings.rules.add(rulesItem1)
+
+                val rulesItem2 = V2rayConfig.RoutingBean.SettingsBean.RulesBean("", null, null, "")
+                rulesItem2.type = "field"
+                rulesItem2.outboundTag = "direct"
+                rulesItem2.ip = ArrayList<String>()
+                rulesItem2.ip?.add("geoip:cn")
+                v2rayConfig.routing.settings.rules.add(rulesItem2)
             }
         } catch (e: Exception) {
             e.printStackTrace()

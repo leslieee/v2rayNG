@@ -9,6 +9,7 @@ import com.v2ray.ang.dto.AngConfig
 import com.v2ray.ang.extension.alertView
 import com.v2ray.ang.extension.selector
 import com.v2ray.ang.util.AngConfigManager
+import com.v2ray.ang.util.Utils
 import kotlinx.android.synthetic.main.item_qrcode.view.*
 import kotlinx.android.synthetic.main.item_recycler_main.view.*
 import org.jetbrains.anko.*
@@ -60,8 +61,7 @@ class MainRecyclerAdapter(val activity: BaseActivity) : RecyclerView.Adapter<Mai
             }
 
             holder.layout_share.setOnClickListener {
-                mActivity.selector(null, share_method.asList()) {
-                    i ->
+                mActivity.selector(null, share_method.asList()) { i ->
                     try {
                         when (i) {
                             0 -> {
@@ -98,8 +98,11 @@ class MainRecyclerAdapter(val activity: BaseActivity) : RecyclerView.Adapter<Mai
             holder.infoContainer.setOnClickListener {
                 if (changeable) {
                     AngConfigManager.setActiveServer(position)
-                    notifyDataSetChanged()
+                } else {
+                    AngConfigManager.setActiveServer(position)
+                    Utils.startVService(mActivity)
                 }
+                notifyDataSetChanged()
             }
         } else {
         }

@@ -1,16 +1,20 @@
 package com.v2ray.ang.service
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.graphics.Color
 //import android.net.ConnectivityManager
 import android.net.VpnService
 import android.os.*
+import android.support.annotation.RequiresApi
 import android.support.v4.app.NotificationCompat
-import com.orhanobut.logger.Logger
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.extension.defaultDPreference
@@ -92,7 +96,7 @@ class V2RayVpnService : VpnService() {
                     else
                         builder.addAllowedApplication(it)
                 } catch (e: PackageManager.NameNotFoundException) {
-                    Logger.d(e)
+                    //Logger.d(e)
                 }
             }
         }
@@ -110,9 +114,10 @@ class V2RayVpnService : VpnService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startV2ray()
+        restartV2Ray()
 
-        return super.onStartCommand(intent, flags, startId)
+        return START_STICKY
+        //return super.onStartCommand(intent, flags, startId)
     }
 
     private fun vpnCheckIsReady() {
@@ -131,13 +136,15 @@ class V2RayVpnService : VpnService() {
         }
     }
 
-    private fun startV2ray() {
-        if (!v2rayPoint.isRunning) {
+    private fun startV2ray(isForced: Boolean = false) {
+        if (!v2rayPoint.isRunning || isForced) {
 
-            registerReceiver(mMsgReceive, IntentFilter(AppConfig.BROADCAST_ACTION_SERVICE))
+            try {
+                registerReceiver(mMsgReceive, IntentFilter(AppConfig.BROADCAST_ACTION_SERVICE))
+            } catch (e: Exception) {
+            }
 
             configContent = defaultDPreference.getPrefString(AppConfig.PREF_CURR_CONFIG, "")
-
 
 //            connectivitySubscription = ReactiveNetwork.observeNetworkConnectivity(this.applicationContext)
 //                    .subscribeOn(Schedulers.io())
@@ -166,7 +173,7 @@ class V2RayVpnService : VpnService() {
         //  showNotification()
     }
 
-    private fun stopV2Ray() {
+    private fun stopV2Ray(isForced: Boolean = true) {
 //        val configName = defaultDPreference.getPrefString(PREF_CURR_CONFIG_GUID, "")
 //        val emptyInfo = VpnNetworkInfo()
 //        val info = loadVpnNetworkInfo(configName, emptyInfo)!! + (lastNetworkInfo ?: emptyInfo)
@@ -176,18 +183,27 @@ class V2RayVpnService : VpnService() {
             v2rayPoint.stopLoop()
         }
 
-        unregisterReceiver(mMsgReceive)
 //        unregisterReceiver(netWorkStateReceiver)
 
 //        connectivitySubscription?.let {
 //            it.unsubscribe()
 //            connectivitySubscription = null
 //        }
-
-
         MessageUtil.sendMsg2UI(this, AppConfig.MSG_STATE_STOP_SUCCESS, "")
         cancelNotification()
-        stopSelf()
+
+        if (isForced) {
+            try {
+                unregisterReceiver(mMsgReceive)
+            } catch (e: Exception) {
+            }
+            stopSelf()
+        }
+    }
+
+    private fun restartV2Ray() {
+        stopV2Ray(false)
+        startV2ray(true)
     }
 
     private fun restartV2RaySoft() {
@@ -213,7 +229,16 @@ class V2RayVpnService : VpnService() {
                 NOTIFICATION_PENDING_INTENT_STOP_V2RAY, stopV2RayIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT)
 
-        val notification = NotificationCompat.Builder(applicationContext, "M_CH_ID")
+        val channelId =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    createNotificationChannel()
+                } else {
+                    // If earlier version channel ID is not used
+                    // https://developer.android.com/reference/android/support/v4/app/NotificationCompat.Builder.html#NotificationCompat.Builder(android.content.Context)
+                    ""
+                }
+
+        val notification = NotificationCompat.Builder(applicationContext, channelId)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(defaultDPreference.getPrefString(AppConfig.PREF_CURR_CONFIG_NAME, ""))
                 .setContentText(getString(R.string.notification_action_more))
@@ -230,6 +255,20 @@ class V2RayVpnService : VpnService() {
 //            netWorkStateReceiver = NetWorkStateReceiver()
 //        }
 //        registerReceiver(netWorkStateReceiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun createNotificationChannel(): String {
+        val channelId = "RAY_NG_M_CH_ID"
+        val channelName = "V2rayNG Background Service"
+        val chan = NotificationChannel(channelId,
+                channelName, NotificationManager.IMPORTANCE_HIGH)
+        chan.lightColor = Color.DKGRAY
+        chan.importance = NotificationManager.IMPORTANCE_NONE
+        chan.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+        val service = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        service.createNotificationChannel(chan)
+        return channelId
     }
 
     private fun cancelNotification() {
@@ -249,7 +288,7 @@ class V2RayVpnService : VpnService() {
         override fun protect(l: Long) = (if (this@V2RayVpnService.protect(l.toInt())) 0 else 1).toLong()
 
         override fun onEmitStatus(l: Long, s: String?): Long {
-            Logger.d(s)
+            //Logger.d(s)
             return 0
         }
 
@@ -292,6 +331,9 @@ class V2RayVpnService : VpnService() {
                 }
                 AppConfig.MSG_STATE_STOP -> {
                     vpnService?.stopV2Ray()
+                }
+                AppConfig.MSG_STATE_RESTART -> {
+                    vpnService?.restartV2Ray()
                 }
                 AppConfig.MSG_STATE_RESTART_SOFT -> {
                     vpnService?.restartV2RaySoft()

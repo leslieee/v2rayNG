@@ -15,6 +15,11 @@ object AppConfig {
     const val BROADCAST_ACTION_ACTIVITY = "com.v2ray.ang.action.activity"
     const val BROADCAST_ACTION_WIDGET_CLICK = "com.v2ray.ang.action.widget.click"
 
+    const val TASKER_EXTRA_BUNDLE = "com.twofortyfouram.locale.intent.extra.BUNDLE"
+    const val TASKER_EXTRA_STRING_BLURB = "com.twofortyfouram.locale.intent.extra.BLURB";
+    const val TASKER_EXTRA_BUNDLE_SWITCH = "tasker_extra_bundle_switch"
+    const val TASKER_EXTRA_BUNDLE_GUID = "tasker_extra_bundle_guid"
+
     const val MSG_REGISTER_CLIENT = 1
     const val MSG_STATE_RUNNING = 11
     const val MSG_STATE_NOT_RUNNING = 12
@@ -26,4 +31,6 @@ object AppConfig {
     const val MSG_STATE_STOP_SUCCESS = 41
     const val MSG_STATE_RESTART = 5
     const val MSG_STATE_RESTART_SOFT = 6
+
+
 }

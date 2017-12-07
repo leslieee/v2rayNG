@@ -8,13 +8,11 @@ import android.preference.CheckBoxPreference
 import android.preference.EditTextPreference
 import android.preference.Preference
 import android.preference.PreferenceFragment
-import android.support.v7.app.AppCompatActivity
 import com.v2ray.ang.BuildConfig
 import com.v2ray.ang.InappBuyActivity
 import com.v2ray.ang.R
 import com.v2ray.ang.extension.defaultDPreference
 import com.v2ray.ang.extension.onClick
-import de.psdev.licensesdialog.LicensesDialogFragment
 import libv2ray.Libv2ray
 import org.jetbrains.anko.act
 import org.jetbrains.anko.defaultSharedPreferences
@@ -29,7 +27,7 @@ class SettingsActivity : BaseActivity() {
         const val PREF_REMOTE_DNS = "pref_remote_dns"
 
         const val PREF_DONATE = "pref_donate"
-        const val PREF_LICENSES = "pref_licenses"
+//        const val PREF_LICENSES = "pref_licenses"
         const val PREF_FEEDBACK = "pref_feedback"
         const val PREF_VERSION = "pref_version"
         //        const val PREF_AUTO_RESTART = "pref_auto_restart"
@@ -48,7 +46,7 @@ class SettingsActivity : BaseActivity() {
         val remoteDns by lazy { findPreference(PREF_REMOTE_DNS) as EditTextPreference }
 
         val donate: Preference by lazy { findPreference(PREF_DONATE) }
-        val licenses: Preference by lazy { findPreference(PREF_LICENSES) }
+//        val licenses: Preference by lazy { findPreference(PREF_LICENSES) }
         val feedback: Preference by lazy { findPreference(PREF_FEEDBACK) }
         val version: Preference by lazy { findPreference(PREF_VERSION) }
 
@@ -60,13 +58,13 @@ class SettingsActivity : BaseActivity() {
                 donate()
             }
 
-            licenses.onClick {
-                val fragment = LicensesDialogFragment.Builder(act)
-                        .setNotices(R.raw.licenses)
-                        .setIncludeOwnLicense(false)
-                        .build()
-                fragment.show((act as AppCompatActivity).supportFragmentManager, null)
-            }
+//            licenses.onClick {
+//                val fragment = LicensesDialogFragment.Builder(act)
+//                        .setNotices(R.raw.licenses)
+//                        .setIncludeOwnLicense(false)
+//                        .build()
+//                fragment.show((act as AppCompatActivity).supportFragmentManager, null)
+//            }
 
             feedback.onClick {
                 openUri("https://github.com/2dust/v2rayNG/issues")

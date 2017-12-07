@@ -53,9 +53,8 @@
     <!-- PerAppProxyActivity -->
     <string name="msg_dialog_progress">Loading</string>
     <string name="menu_item_select_all">Select all</string>
-    <string name="switch_bypass_apps_on">Don\'t proxy selected apps</string>
-    <string name="switch_bypass_apps_off">Proxy selected apps</string>
     <string name="msg_enter_keywords">Enter keywords</string>
+    <string name="switch_bypass_apps_mode">Bypass Mode</string>
 
 
     <!-- Preferences -->
@@ -90,6 +89,12 @@
     <string name="donate_error_purchase2">Error Purchase,Authenticity verification failed.</string>
     <string name="donate_success_purchase">Thank you for your donation!</string>
     <string name="donate_item_click">Donate</string>
+
+    <string name="title_logcat">Logcat</string>
+    <string name="logcat_copy">Copy</string>
+
+    <string name="tasker_start_service">Start Service</string>
+    <string name="tasker_setting_confirm">Confirm</string>
 
     <string-array name="share_method">
         <item>QRcode</item>

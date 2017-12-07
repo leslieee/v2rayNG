@@ -53,9 +53,8 @@
     <!-- PerAppProxyActivity -->
     <string name="msg_dialog_progress">正在加载</string>
     <string name="menu_item_select_all">全选</string>
-    <string name="switch_bypass_apps_on">选中的应用不走代理</string>
-    <string name="switch_bypass_apps_off">选中的应用走代理</string>
     <string name="msg_enter_keywords">输入关键字</string>
+    <string name="switch_bypass_apps_mode">绕行模式</string>
 
     <!-- Preferences -->
     <string name="title_settings">设置</string>
@@ -89,6 +88,12 @@
     <string name="donate_error_purchase2">错误,真实性验证失败.</string>
     <string name="donate_success_purchase">感谢您的捐赠!</string>
     <string name="donate_item_click">捐赠</string>
+
+    <string name="title_logcat">Logcat</string>
+    <string name="logcat_copy">复制</string>
+
+    <string name="tasker_start_service">启动服务</string>
+    <string name="tasker_setting_confirm">确定</string>
 
     <string-array name="share_method">
         <item>二维码</item>

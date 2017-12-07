@@ -2,7 +2,6 @@ package com.v2ray.ang.ui
 
 import android.Manifest
 import android.content.*
-import android.net.ConnectivityManager
 import android.net.Uri
 import android.net.VpnService
 import android.support.v7.widget.LinearLayoutManager
@@ -10,7 +9,6 @@ import android.view.Menu
 import android.view.MenuItem
 import com.tbruyelle.rxpermissions.RxPermissions
 import com.v2ray.ang.R
-import com.v2ray.ang.service.V2RayVpnService
 import com.v2ray.ang.util.AngConfigManager
 import com.v2ray.ang.util.Utils
 import kotlinx.android.synthetic.main.activity_main.*
@@ -52,7 +50,7 @@ class MainActivity : BaseActivity() {
 
         fab.setOnClickListener {
             if (fabChecked) {
-                MessageUtil.sendMsg2Service(this, AppConfig.MSG_STATE_STOP, "")
+                Utils.stopVService(this)
             } else {
                 val intent = VpnService.prepare(this)
                 if (intent == null) {
@@ -69,9 +67,7 @@ class MainActivity : BaseActivity() {
 
     fun startV2Ray() {
         toast(R.string.toast_services_start)
-        if (AngConfigManager.genStoreV2rayConfig()) {
-            V2RayVpnService.startV2Ray(this)
-        }
+        Utils.startVService(this)
     }
 
     override fun onStart() {
@@ -162,13 +158,13 @@ class MainActivity : BaseActivity() {
             startActivity<SettingsActivity>("isRunning" to fabChecked)
             true
         }
+        R.id.logcat -> {
+            startActivity<LogcatActivity>()
+            true
+        }
         else -> super.onOptionsItemSelected(item)
     }
 
-
-    override fun onBackPressed() {
-        super.onBackPressed()
-    }
 
     /**
      * import config from qrcode

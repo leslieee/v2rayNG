@@ -258,7 +258,7 @@ object AngConfigManager {
                 return -1
             }
 
-            Utils.setClipboard(conf, app.applicationContext)
+            Utils.setClipboard(app.applicationContext, conf)
 
         } catch (e: Exception) {
             e.printStackTrace()
@@ -320,6 +320,27 @@ object AngConfigManager {
                 angConfig.index = 0
             }
             storeConfigFile()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return -1
+        }
+        return 0
+    }
+
+    /**
+     * getIndexViaGuid
+     */
+    fun getIndexViaGuid(guid: String): Int {
+        try {
+            if (TextUtils.isEmpty(guid)) {
+                return -1
+            }
+            for (i in angConfig.vmess.indices) {
+                if (angConfig.vmess[i].guid == guid) {
+                    return i
+                }
+            }
+            return -1
         } catch (e: Exception) {
             e.printStackTrace()
             return -1
