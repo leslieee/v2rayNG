@@ -111,6 +111,10 @@ dependencies {
 
     compile 'me.dm7.barcodescanner:core:1.9.3'
     compile 'me.dm7.barcodescanner:zxing:1.9.3'
+
+    compile 'com.squareup.okhttp3:okhttp:3.5.0'
+    compile 'com.squareup.okio:okio:1.11.0'
+    compile 'com.beust:klaxon:0.30'
 }
 
 buildscript {

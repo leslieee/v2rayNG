@@ -22,6 +22,26 @@ import org.jetbrains.anko.*
 import java.lang.ref.SoftReference
 import java.net.URL
 import android.content.IntentFilter
+import android.support.v7.app.AlertDialog
+import android.widget.Toast
+import com.beust.klaxon.JsonArray
+import com.beust.klaxon.Parser
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okio.BufferedSink;
+import java.io.IOException
+import com.google.gson.Gson
+import com.squareup.haha.perflib.Main
+import com.v2ray.ang.dto.AngConfig
+import kotlinx.android.synthetic.main.alertdialog_login.view.*
+import me.dozen.dpreference.DPreference
 
 class MainActivity : BaseActivity() {
     companion object {
@@ -30,6 +50,9 @@ class MainActivity : BaseActivity() {
         private const val REQUEST_FILE_CHOOSER = 2
         private const val REQUEST_SCAN_URL = 3
     }
+
+    var okHttpClient: OkHttpClient? = null
+    val loginAlert by lazy { AlertDialog.Builder(this@MainActivity).create() }
 
     var fabChecked = false
         set(value) {
@@ -63,6 +86,104 @@ class MainActivity : BaseActivity() {
 
         recycler_view.layoutManager = LinearLayoutManager(this)
         recycler_view.adapter = adapter
+
+        // 1.拿到OkHttpClient对象
+        okHttpClient = OkHttpClient().newBuilder().build()
+        // 这里想办法判断登录状态(是否已保存过用户名密码)
+
+        if (DPreference(this, packageName + "_preferences").getPrefBoolean("is_login", false)) {
+            // 有的话直接doGet()
+            doGet()
+        } else {
+            // 没有话弹输入框 输入完成后调doGet()
+
+            val inflater = getLayoutInflater();
+            val dialoglayout = inflater.inflate(R.layout.alertdialog_login, null);
+            dialoglayout.loginButton.setOnClickListener {
+                // 先将用户名密码保存
+                val username = dialoglayout.username.text.toString()
+                val passwd = dialoglayout.password.text.toString()
+                if (username == "" || passwd == "") {
+                    Toast.makeText(this@MainActivity, "用户名密码不能为空", Toast.LENGTH_SHORT).show()
+                } else {
+                    DPreference(this, packageName + "_preferences").setPrefString("username", username)
+                    DPreference(this, packageName + "_preferences").setPrefString("passwd", passwd)
+
+                    doGet()
+                }
+            }
+            loginAlert.setView(dialoglayout)
+            loginAlert.setCanceledOnTouchOutside(false)
+            loginAlert.show()
+        }
+
+    }
+
+    fun doGet() {
+        // 创建request对象
+        var builder = Request.Builder();
+        // 获取本地保存的用户名密码
+        val username = DPreference(this, packageName + "_preferences").getPrefString("username", "")
+        val passwd = DPreference(this, packageName + "_preferences").getPrefString("passwd", "")
+
+        // 准备开个接口, 不需要登录, 上传用户名密码然后拿到服务器配置信息
+        var request = builder.get().url("https://speedss.ml/getandroidserverconfig?email=$username&passwd=$passwd").build();
+        execute(request);
+    }
+
+    private fun execute(request: Request) {
+        //封装成一个请求的任务
+        val call = okHttpClient?.newCall(request)
+        //同步的请求 Response response = call.execute();
+        //  执行请求(异步的请求)
+        call?.enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                // LogUtil.i("请求失败:" + e.toString())
+                // println("请求失败:" + e.toString())
+                runOnUiThread{
+                    Toast.makeText(this@MainActivity, "请求服务器失败: " + e.toString(), Toast.LENGTH_LONG).show()
+                }
+           }
+
+            override fun onResponse(call: Call, response: Response) {
+                // LogUtil.i("请求成功:" + response.body().string())
+                // println("请求成功:" + response.body().string())
+                // 拿到用户配置 1. 存入本地 2. 生产列表 3. 设为活动服务器 4. 进入连接状态
+                val str = response.body().string()
+                if (str.contains("ret") || str.contains("msg")) {
+                    runOnUiThread {
+                        Toast.makeText(this@MainActivity, "用户名或者密码错误", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    runOnUiThread {
+                        loginAlert.dismiss()
+                    }
+                    // 没有错误的情况下先保留登录状态
+                    DPreference(this@MainActivity, packageName + "_preferences").setPrefBoolean("is_login", true)
+
+                    val ss = Gson().fromJson(str, Array<String>::class.java)
+                    // 插入之前把之前的清理掉
+                    AngConfigManager.configs.vmess.clear()
+                    for (s in ss)
+                        importConfigNoToast(s)
+                    // 最后来更新
+                    runOnUiThread {
+                        // 更新界面信息
+                        Toast.makeText(this@MainActivity, "更新服务器成功", Toast.LENGTH_SHORT).show()
+                        adapter.updateConfigList()
+                        // 模拟点击fab
+                        fab.performClick()
+                    }
+                }
+            }
+        })
+    }
+
+    fun parse(name: String) : Any? {
+        val cls = Parser::class.java
+        return cls.getResourceAsStream(name)?.let { inputStream ->
+            return Parser().parse(inputStream)
+        }
     }
 
     fun startV2Ray() {
@@ -211,6 +332,21 @@ class MainActivity : BaseActivity() {
         } else {
             toast(R.string.toast_success)
             adapter.updateConfigList()
+        }
+    }
+
+    fun importConfigNoToast(server: String?) {
+        if (server == null) {
+            return
+        }
+        val resId = AngConfigManager.importConfig(server)
+        runOnUiThread {
+            if (resId > 0) {
+                toast(resId)
+            } else {
+                // toast(R.string.toast_success)
+                // adapter.updateConfigList()
+            }
         }
     }
 
