@@ -24,22 +24,15 @@ import java.net.URL
 import android.content.IntentFilter
 import android.support.v7.app.AlertDialog
 import android.widget.Toast
-import com.beust.klaxon.JsonArray
 import com.beust.klaxon.Parser
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.FormBody;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
-import okio.BufferedSink;
 import java.io.IOException
 import com.google.gson.Gson
-import com.squareup.haha.perflib.Main
-import com.v2ray.ang.dto.AngConfig
+// import com.squareup.haha.perflib.Main
 import kotlinx.android.synthetic.main.alertdialog_login.view.*
 import me.dozen.dpreference.DPreference
 
@@ -79,6 +72,7 @@ class MainActivity : BaseActivity() {
                 if (intent == null) {
                     startV2Ray()
                 } else {
+                    // 没有vpn权限的话弹出授权界面
                     startActivityForResult(intent, REQUEST_CODE_VPN_PREPARE)
                 }
             }

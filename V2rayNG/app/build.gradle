@@ -101,9 +101,9 @@ dependencies {
     compile 'com.orhanobut:logger:1.15'
 
     // LeakCanary
-    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.4'
-    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.4'
-    testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.4'
+    // debugCompile 'com.squareup.leakcanary:leakcanary-android:1.4'
+    // releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.4'
+    // testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.4'
 
     // Firebase
     compile "com.google.firebase:firebase-core:$firebaseVersion"
