@@ -15,36 +15,36 @@ android {
         versionName "0.2.6"
     }
 
-    signingConfigs {
-        release {
-            storeFile file("../key.jks")
-            keyAlias 'ang'
-            keyPassword '123456'
-            storePassword '123456'
-        }
-        debug {
-            storeFile file("../key.jks")
-            keyAlias 'ang'
-            keyPassword '123456'
-            storePassword '123456'
-        }
-    }
+//    signingConfigs {
+//        release {
+//            storeFile file("../key.jks")
+//            keyAlias 'ang'
+//            keyPassword '123456'
+//            storePassword '123456'
+//        }
+//        debug {
+//            storeFile file("../key.jks")
+//            keyAlias 'ang'
+//            keyPassword '123456'
+//            storePassword '123456'
+//        }
+//    }
 
-    buildTypes {
-        release {
-            minifyEnabled false
-            zipAlignEnabled false
-            shrinkResources false
-            signingConfig signingConfigs.release
-//            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-        debug {
-            minifyEnabled false
-            zipAlignEnabled false
-            shrinkResources false
-            signingConfig signingConfigs.release
-        }
-    }
+//    buildTypes {
+//        release {
+//            minifyEnabled false
+//            zipAlignEnabled false
+//            shrinkResources false
+//            signingConfig signingConfigs.release
+////            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+//        }
+//        debug {
+//            minifyEnabled false
+//            zipAlignEnabled false
+//            shrinkResources false
+//            signingConfig signingConfigs.release
+//        }
+//    }
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
