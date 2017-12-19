@@ -36,6 +36,8 @@ object AngConfigManager {
                 angConfig = Gson().fromJson(context, AngConfig::class.java)
             } else {
                 angConfig = AngConfig(0, vmess = arrayListOf(AngConfig.VmessBean()))
+                // 删除默认配置
+                angConfig.vmess.removeAt(0)
             }
         } catch (e: Exception) {
             e.printStackTrace()
