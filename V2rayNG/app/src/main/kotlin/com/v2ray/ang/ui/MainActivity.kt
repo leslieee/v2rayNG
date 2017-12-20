@@ -23,6 +23,7 @@ import java.lang.ref.SoftReference
 import java.net.URL
 import android.content.IntentFilter
 import android.support.v7.app.AlertDialog
+import android.view.View
 import android.widget.Toast
 import com.beust.klaxon.Parser
 import okhttp3.Call;
@@ -76,6 +77,10 @@ class MainActivity : BaseActivity() {
                     startActivityForResult(intent, REQUEST_CODE_VPN_PREPARE)
                 }
             }
+        }
+
+        webviewbutton.setOnClickListener {
+            startActivity<WebviewActivity>()
         }
 
         recycler_view.layoutManager = LinearLayoutManager(this)
@@ -135,7 +140,7 @@ class MainActivity : BaseActivity() {
                 // LogUtil.i("请求失败:" + e.toString())
                 // println("请求失败:" + e.toString())
                 runOnUiThread{
-                    Toast.makeText(this@MainActivity, "请求服务器失败: " + e.toString(), Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@MainActivity, "更新服务器失败: " + e.toString(), Toast.LENGTH_LONG).show()
                 }
            }
 
@@ -468,20 +473,27 @@ class MainActivity : BaseActivity() {
             when (intent?.getIntExtra("key", 0)) {
                 AppConfig.MSG_STATE_RUNNING -> {
                     activity?.fabChecked = true
+                    activity?.webviewbutton?.visibility = View.VISIBLE
                 }
                 AppConfig.MSG_STATE_NOT_RUNNING -> {
                     activity?.fabChecked = false
+                    activity?.webviewbutton?.visibility = View.INVISIBLE
                 }
                 AppConfig.MSG_STATE_START_SUCCESS -> {
                     activity?.toast(R.string.toast_services_success)
                     activity?.fabChecked = true
+                    activity?.webviewbutton?.visibility = View.VISIBLE
+                    // 这里弹一个浏览器
+                    // activity?.startActivity<WebviewActivity>()
                 }
                 AppConfig.MSG_STATE_START_FAILURE -> {
                     activity?.toast(R.string.toast_services_failure)
                     activity?.fabChecked = false
+                    activity?.webviewbutton?.visibility = View.INVISIBLE
                 }
                 AppConfig.MSG_STATE_STOP_SUCCESS -> {
                     activity?.fabChecked = false
+                    activity?.webviewbutton?.visibility = View.INVISIBLE
                 }
             }
         }

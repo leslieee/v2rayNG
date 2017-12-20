@@ -7,8 +7,8 @@
     <!-- <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" /> -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="com.android.vending.BILLING" />
-    <!--<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />-->
 
+    <!-- <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> -->
     <application
         android:name=".AngApplication"
         android:allowBackup="true"
@@ -45,9 +45,8 @@
         <activity android:name=".ui.SettingsActivity" />
         <activity android:name=".ui.PerAppProxyActivity" />
         <activity android:name=".ui.ScannerActivity" />
-        <activity android:name="com.v2ray.ang.InappBuyActivity" />
+        <activity android:name=".InappBuyActivity" />
         <activity android:name=".ui.LogcatActivity" />
-
 
         <service
             android:name=".service.V2RayVpnService"
@@ -78,9 +77,10 @@
             </intent-filter>
         </service>
 
-        <!--<receiver android:name=".receiver.NetWorkStateReceiver" />-->
+        <!-- <receiver android:name=".receiver.NetWorkStateReceiver" /> -->
 
-        <!--=====================Tasker=====================-->
+
+        <!-- =====================Tasker===================== -->
         <activity
             android:name=".ui.TaskerActivity"
             android:icon="@mipmap/ic_launcher"
@@ -95,8 +95,13 @@
                 <action android:name="com.twofortyfouram.locale.intent.action.FIRE_SETTING" />
             </intent-filter>
         </receiver>
-        <!--=====================Tasker=====================-->
+        <!-- =====================Tasker===================== -->
 
+        <activity
+            android:name=".ui.WebviewActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
+
+        </activity>
     </application>
 
 </manifest>
