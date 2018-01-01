@@ -92,7 +92,7 @@ class MainActivity : BaseActivity() {
 
         if (DPreference(this, packageName + "_preferences").getPrefBoolean("is_login", false)) {
             // 有的话直接doGet()
-            doGet()
+            // doGet()
         } else {
             // 没有话弹输入框 输入完成后调doGet()
 
@@ -171,7 +171,9 @@ class MainActivity : BaseActivity() {
                         Toast.makeText(this@MainActivity, "更新服务器成功", Toast.LENGTH_SHORT).show()
                         adapter.updateConfigList()
                         // 模拟点击fab
-                        fab.performClick()
+                        if (!fabChecked) {
+                            fab.performClick()
+                        }
                     }
                 }
             }
@@ -192,7 +194,7 @@ class MainActivity : BaseActivity() {
 
     override fun onStart() {
         super.onStart()
-        fabChecked = false
+        // fabChecked = false
 
 //        val intent = Intent(this.applicationContext, V2RayVpnService::class.java)
 //        intent.`package` = AppConfig.ANG_PACKAGE
