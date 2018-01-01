@@ -25,7 +25,7 @@
             android:layout_alignParentEnd="true"
             android:layout_gravity="bottom|end"
             android:layout_margin="16dp"
-            android:src="@drawable/ic_fab_uncheck"
+            android:src="@drawable/ic_start_idle"
             app:layout_anchorGravity="bottom|right|end" />
 
         <Button
@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="15dp"
             android:padding="20dp"
-            android:text="立刻浏览谷歌"
+            android:text="@string/open_google"
             android:visibility="invisible"
             app:layout_anchor="@id/recycler_view"
             app:layout_anchorGravity="bottom|center" />

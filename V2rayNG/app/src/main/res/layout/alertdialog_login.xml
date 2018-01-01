@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:paddingTop="10dp"
-        android:text="登录 speedss.ml"
+        android:text="@string/login_title"
         android:textAlignment="center"
         android:textSize="18sp"
         android:textStyle="bold" />
@@ -18,7 +18,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="用户名" />
+        android:text="@string/login_username" />
 
     <EditText
         android:id="@+id/username"
@@ -30,14 +30,14 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="密码" />
+        android:text="@string/login_passwd" />
 
     <EditText
         android:id="@+id/password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:inputType="textPersonName" />
+        android:inputType="textPassword" />
 
     <Button
         android:id="@+id/loginButton"
@@ -45,7 +45,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
-        android:text="登录"
+        android:text="@string/login_button"
         android:textSize="18sp" />
 
 </LinearLayout>
