@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-apply plugin: 'com.google.gms.google-services'
+// apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion Integer.parseInt("$compileSdkVer")
@@ -107,8 +107,8 @@ dependencies {
     // testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.4'
 
     // Firebase
-    compile "com.google.firebase:firebase-core:$firebaseVersion"
-    compile "com.google.firebase:firebase-crash:$firebaseVersion"
+    // compile "com.google.firebase:firebase-core:$firebaseVersion"
+    // compile "com.google.firebase:firebase-crash:$firebaseVersion"
 
     compile 'me.dm7.barcodescanner:core:1.9.3'
     compile 'me.dm7.barcodescanner:zxing:1.9.3'
