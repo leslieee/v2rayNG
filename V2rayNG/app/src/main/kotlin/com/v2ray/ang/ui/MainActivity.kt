@@ -126,7 +126,7 @@ class MainActivity : BaseActivity() {
         val passwd = DPreference(this, packageName + "_preferences").getPrefString("passwd", "")
 
         // 准备开个接口, 不需要登录, 上传用户名密码然后拿到服务器配置信息
-        var request = builder.get().url("https://speedss.ml/getandroidserverconfig?email=$username&passwd=$passwd").build();
+        var request = builder.get().url("https://speedss.top/getandroidserverconfig?email=$username&passwd=$passwd").build();
         execute(request);
     }
 

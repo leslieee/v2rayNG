@@ -101,7 +101,7 @@
         <item>Export to clipboard</item>
     </string-array>
     <string name="open_google">open Google</string>
-    <string name="login_title">Log in to speedss.ml</string>
+    <string name="login_title">Log in to speedss.top</string>
     <string name="login_username">username</string>
     <string name="login_passwd">password</string>
     <string name="login_button">Log in</string>
