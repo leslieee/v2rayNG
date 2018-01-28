@@ -25,6 +25,7 @@ import android.content.IntentFilter
 import android.support.v7.app.AlertDialog
 import android.view.View
 import android.widget.Toast
+import android.widget.TextView
 import com.beust.klaxon.Parser
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -95,27 +96,36 @@ class MainActivity : BaseActivity() {
             // doGet()
         } else {
             // 没有话弹输入框 输入完成后调doGet()
-
-            val inflater = getLayoutInflater();
-            val dialoglayout = inflater.inflate(R.layout.alertdialog_login, null);
-            dialoglayout.loginButton.setOnClickListener {
-                // 先将用户名密码保存
-                val username = dialoglayout.username.text.toString()
-                val passwd = dialoglayout.password.text.toString()
-                if (username == "" || passwd == "") {
-                    Toast.makeText(this@MainActivity, "用户名密码不能为空", Toast.LENGTH_SHORT).show()
-                } else {
-                    DPreference(this, packageName + "_preferences").setPrefString("username", username)
-                    DPreference(this, packageName + "_preferences").setPrefString("passwd", passwd)
-
-                    doGet()
-                }
-            }
-            loginAlert.setView(dialoglayout)
-            loginAlert.setCanceledOnTouchOutside(false)
-            loginAlert.show()
+            loginToGetConfiguration()
         }
 
+    }
+
+    fun loginToGetConfiguration() {
+        val inflater = getLayoutInflater()
+        val dialoglayout = inflater.inflate(R.layout.alertdialog_login, null)
+        val username = DPreference(this, packageName + "_preferences").getPrefString("username", "")
+        val passwd = DPreference(this, packageName + "_preferences").getPrefString("passwd", "")
+        if (username != "" && passwd != "") {
+            dialoglayout.username.setText(username, TextView.BufferType.EDITABLE)
+            dialoglayout.password.setText(passwd, TextView.BufferType.EDITABLE)
+        }
+        dialoglayout.loginButton.setOnClickListener {
+            // 先将用户名密码保存
+            val username = dialoglayout.username.text.toString()
+            val passwd = dialoglayout.password.text.toString()
+            if (username == "" || passwd == "") {
+                Toast.makeText(this@MainActivity, "用户名密码不能为空", Toast.LENGTH_SHORT).show()
+            } else {
+                DPreference(this, packageName + "_preferences").setPrefString("username", username)
+                DPreference(this, packageName + "_preferences").setPrefString("passwd", passwd)
+
+                doGet()
+            }
+        }
+        loginAlert.setView(dialoglayout)
+        loginAlert.setCanceledOnTouchOutside(false)
+        loginAlert.show()
     }
 
     fun doGet() {
@@ -260,35 +270,39 @@ class MainActivity : BaseActivity() {
             importQRcode(REQUEST_SCAN)
             true
         }
-        R.id.import_clipboard -> {
-            importClipboard()
+        R.id.import_login -> {
+            loginToGetConfiguration()
             true
         }
+        // R.id.import_clipboard -> {
+        //    importClipboard()
+        //    true
+        // }
         R.id.import_manually -> {
             startActivity<ServerActivity>("position" to -1, "isRunning" to fabChecked)
             adapter.updateConfigList()
             true
         }
-        R.id.import_config_custom_local -> {
-            importConfigCustomLocal()
-            true
-        }
-        R.id.import_config_custom_url -> {
-            importConfigCustomUrlClipboard()
-            true
-        }
-        R.id.import_config_custom_url_scan -> {
-            importQRcode(REQUEST_SCAN_URL)
-            true
-        }
+        // R.id.import_config_custom_local -> {
+        //    importConfigCustomLocal()
+        //    true
+        // }
+        // R.id.import_config_custom_url -> {
+        //    importConfigCustomUrlClipboard()
+        //    true
+        // }
+        // R.id.import_config_custom_url_scan -> {
+        //    importQRcode(REQUEST_SCAN_URL)
+        //    true
+        // }
         R.id.settings -> {
             startActivity<SettingsActivity>("isRunning" to fabChecked)
             true
         }
-        R.id.logcat -> {
-            startActivity<LogcatActivity>()
-            true
-        }
+        // R.id.logcat -> {
+        //    startActivity<LogcatActivity>()
+        //    true
+        // }
         else -> super.onOptionsItemSelected(item)
     }
 

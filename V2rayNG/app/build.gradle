@@ -12,7 +12,7 @@ android {
         minSdkVersion 17
         targetSdkVersion Integer.parseInt("$targetSdkVer")
         versionCode 55
-        versionName "0.2.8"
+        versionName "0.2.9"
     }
 
 //    signingConfigs {

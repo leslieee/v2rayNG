@@ -105,4 +105,5 @@
     <string name="login_username">username</string>
     <string name="login_passwd">password</string>
     <string name="login_button">Log in</string>
+    <string name="menu_item_import_config_login">Login for configuration</string>
 </resources>
