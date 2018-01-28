@@ -215,6 +215,11 @@ class MainActivity : BaseActivity() {
     public override fun onResume() {
         super.onResume()
         adapter.updateConfigList()
+        val isRunning = Utils.isServiceRun(this, "com.v2ray.ang.service.V2RayVpnService")
+        if (!isRunning) {
+            fabChecked = false;
+            webviewbutton.visibility = View.INVISIBLE
+        }
     }
 
     public override fun onPause() {
