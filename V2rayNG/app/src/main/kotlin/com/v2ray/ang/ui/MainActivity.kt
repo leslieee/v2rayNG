@@ -104,21 +104,17 @@ class MainActivity : BaseActivity() {
     fun loginToGetConfiguration() {
         val inflater = getLayoutInflater()
         val dialoglayout = inflater.inflate(R.layout.alertdialog_login, null)
-        val username = DPreference(this, packageName + "_preferences").getPrefString("username", "")
-        val passwd = DPreference(this, packageName + "_preferences").getPrefString("passwd", "")
-        if (username != "" && passwd != "") {
-            dialoglayout.username.setText(username, TextView.BufferType.EDITABLE)
-            dialoglayout.password.setText(passwd, TextView.BufferType.EDITABLE)
+        val subscribe = DPreference(this, packageName + "_preferences").getPrefString("subscribe", "")
+        if (subscribe != "") {
+            dialoglayout.subscribe.setText(subscribe, TextView.BufferType.EDITABLE)
         }
         dialoglayout.loginButton.setOnClickListener {
             // 先将用户名密码保存
-            val username = dialoglayout.username.text.toString()
-            val passwd = dialoglayout.password.text.toString()
-            if (username == "" || passwd == "") {
-                Toast.makeText(this@MainActivity, "用户名密码不能为空", Toast.LENGTH_SHORT).show()
+            val subscribe = dialoglayout.subscribe.text.toString()
+            if (subscribe == "") {
+                Toast.makeText(this@MainActivity, "订阅地址不能为空", Toast.LENGTH_SHORT).show()
             } else {
-                DPreference(this, packageName + "_preferences").setPrefString("username", username)
-                DPreference(this, packageName + "_preferences").setPrefString("passwd", passwd)
+                DPreference(this, packageName + "_preferences").setPrefString("subscribe", subscribe)
 
                 doGet()
             }
@@ -132,11 +128,10 @@ class MainActivity : BaseActivity() {
         // 创建request对象
         var builder = Request.Builder();
         // 获取本地保存的用户名密码
-        val username = DPreference(this, packageName + "_preferences").getPrefString("username", "")
-        val passwd = DPreference(this, packageName + "_preferences").getPrefString("passwd", "")
+        val subscribe = DPreference(this, packageName + "_preferences").getPrefString("subscribe", "")
 
         // 准备开个接口, 不需要登录, 上传用户名密码然后拿到服务器配置信息
-        var request = builder.get().url("https://speedss.xyz/getandroidserverconfig?email=$username&passwd=$passwd").build();
+        var request = builder.get().url(subscribe).build();
         execute(request);
     }
 
@@ -159,11 +154,11 @@ class MainActivity : BaseActivity() {
                 // println("请求成功:" + response.body().string())
                 // 拿到用户配置 1. 存入本地 2. 生产列表 3. 设为活动服务器 4. 进入连接状态
                 val str = response.body().string()
-                if (str.contains("ret") || str.contains("msg")) {
-                    runOnUiThread {
-                        Toast.makeText(this@MainActivity, "用户名或者密码错误", Toast.LENGTH_SHORT).show()
-                    }
-                } else {
+                // if (str.contains("ret") || str.contains("msg")) {
+                //    runOnUiThread {
+                //        Toast.makeText(this@MainActivity, "用户名或者密码错误", Toast.LENGTH_SHORT).show()
+                //    }
+                // } else {
                     runOnUiThread {
                         loginAlert.dismiss()
                     }
@@ -185,7 +180,7 @@ class MainActivity : BaseActivity() {
                             fab.performClick()
                         }
                     }
-                }
+                // }
             }
         })
     }

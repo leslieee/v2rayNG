@@ -100,9 +100,9 @@
         <item>导出至剪贴板</item>
     </string-array>
     <string name="open_google">立刻打开谷歌</string>
-    <string name="login_title">登录 speedss</string>
-    <string name="login_username">用户名</string>
+    <string name="login_title">服务器订阅</string>
+    <string name="login_username">订阅地址</string>
     <string name="login_passwd">密码</string>
-    <string name="login_button">登录</string>
-    <string name="menu_item_import_config_login">登录获取配置(推荐)</string>
+    <string name="login_button">获取配置</string>
+    <string name="menu_item_import_config_login">"服务器订阅 (推荐) "</string>
 </resources>
