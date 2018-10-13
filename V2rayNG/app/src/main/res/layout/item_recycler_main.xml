@@ -17,15 +17,15 @@
         <LinearLayout
             android:id="@+id/info_container"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/server_height"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
-            android:orientation="horizontal"
-            android:padding="5dp">
+            android:orientation="horizontal">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
                 android:orientation="horizontal">
 
                 <android.support.v7.widget.AppCompatRadioButton
@@ -42,6 +42,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:layout_marginLeft="5dp"
                 android:orientation="vertical">
 
                 <TextView
@@ -54,7 +55,6 @@
                     android:id="@+id/tv_statistics"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
                     android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
             </LinearLayout>
@@ -65,7 +65,8 @@
                 android:layout_height="@dimen/server_height"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:paddingEnd="@dimen/layout_margin_right_height">
+                android:layout_marginLeft="5dp"
+                android:paddingEnd="10dp">
 
                 <ImageView
                     android:layout_width="@dimen/png_height"
@@ -80,7 +81,7 @@
                 android:layout_height="@dimen/server_height"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:paddingEnd="@dimen/layout_margin_right_height">
+                android:paddingEnd="10dp">
 
                 <ImageView
                     android:layout_width="@dimen/png_height"
